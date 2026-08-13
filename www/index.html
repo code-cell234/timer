@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>StudyPulse - Ultimate Study Session, Reminders & Productivity Hub</title>
+  <meta name="theme-color" content="#131722">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="All-in-one productivity app for students and professionals. Pomodoro focus timer, smart recurring reminders, active recall flashcards, study timetable, and analytics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=JetBrains+Mono:wght@400;500&family=Lexend:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/views.css">
+  <link rel="stylesheet" href="styles/effects3d.css">
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+</head>
+<body>
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('[PWA] Service worker registered:', reg.scope))
+          .catch(err => console.warn('[PWA] SW registration failed:', err));
+      });
+    }
+  </script>
+  <div id="app-container" class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-group">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              <circle cx="12" cy="12" r="4"/>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <h2>Study<span>Pulse</span></h2>
+            <span class="badge-sub">Pro Suite</span>
+          </div>
+        </div>
+        <button id="close-sidebar-btn" class="icon-btn mobile-only" aria-label="Close Sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Quick User Level & Streak Summary -->
+      <div class="user-mini-status" id="sidebar-user-status">
+        <div class="streak-pill">
+          <span class="streak-flame">🔥</span>
+          <span id="sidebar-streak-count" class="streak-text">0 Day Streak</span>
+        </div>
+        <div class="level-indicator">
+          <div class="level-info">
+            <span class="level-badge" id="user-level-badge">Lvl 1 Novice</span>
+            <span class="xp-text" id="user-xp-text">0 / 100 XP</span>
+          </div>
+          <div class="xp-bar-bg">
+            <div class="xp-bar-fill" id="sidebar-xp-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nav Links -->
+      <nav class="sidebar-nav" aria-label="Main Navigation">
+        <button class="nav-item active" data-view="focus-view" id="nav-focus">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Focus Session</span>
+          <span class="nav-active-pill"></span>
+        </button>
+
+        <button class="nav-item" data-view="reminders-view" id="nav-reminders">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><circle cx="18" cy="4" r="3" fill="var(--color-accent-amber)" stroke="none" class="badge-dot" id="pending-reminder-dot" style="display:none;"/></svg>
+          <span>Reminders & Tasks</span>
+          <span class="counter-badge" id="tasks-due-badge">0</span>
+        </button>
+
+        <button class="nav-item" data-view="planner-view" id="nav-planner">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Timetable & Planner</span>
+        </button>
+
+        <button class="nav-item" data-view="flashcards-view" id="nav-flashcards">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><polyline points="9 8 13 8 13 14 9 14"/></svg>
+          <span>Flashcard Decks</span>
+        </button>
+
+        <button class="nav-item" data-view="habits-view" id="nav-habits">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>Habits & Badges</span>
+        </button>
+
+        <button class="nav-item" data-view="analytics-view" id="nav-analytics">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>Insights & Analytics</span>
+        </button>
+
+        <button class="nav-item" data-view="settings-view" id="nav-settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings & Backup</span>
+        </button>
+      </nav>
+
+      <!-- Bottom Audio Quick-Dock -->
+      <div class="sidebar-footer">
+        <div class="ambient-dock" id="ambient-dock">
+          <div class="ambient-dock-header">
+            <span class="ambient-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              Soundscapes
+            </span>
+            <button id="toggle-ambient-btn" class="text-btn-xs" title="Toggle Soundscape">Off</button>
+          </div>
+          <div class="ambient-select-row">
+            <select id="ambient-sound-select" aria-label="Select Ambient Sound">
+              <option value="none">🔇 None (Silent)</option>
+              <option value="rain">🌧️ Rain Shower</option>
+              <option value="whitenoise">💨 White Noise</option>
+              <option value="pinknoise">🍃 Soft Pink Noise</option>
+              <option value="brownnoise">🌊 Deep Brown Noise</option>
+              <option value="binaural">🧠 Binaural Focus (40Hz)</option>
+              <option value="cafe">☕ Coffee Shop Buzz</option>
+            </select>
+          </div>
+          <div class="ambient-volume-row">
+            <input type="range" id="ambient-volume-slider" min="0" max="100" value="40" aria-label="Ambient volume slider">
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <!-- Top Navigation Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <button id="menu-toggle-btn" class="icon-btn mobile-only" aria-label="Open Navigation Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="header-title-box">
+            <h1 id="page-title" class="page-title">Focus Session</h1>
+            <p id="page-subtitle" class="page-subtitle">Ready to conquer your study goals?</p>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Mini Timer Indicator when on other views -->
+          <div id="mini-timer-pill" class="mini-timer-pill hidden" title="Click to view Active Focus Session">
+            <span class="pulsing-record-dot"></span>
+            <span id="mini-timer-label">Focus</span>
+            <span id="mini-timer-time" class="mono-num">25:00</span>
+          </div>
+
+          <!-- Quick Action: New Reminder -->
+          <button id="header-quick-add-btn" class="btn btn-primary btn-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ Reminder</span>
+          </button>
+
+          <!-- Theme Switcher Quick Toggle -->
+          <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle Theme" title="Switch Theme">
+            <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Notification Permission Banner (if not granted) -->
+      <div id="notification-banner" class="notification-banner hidden">
+        <div class="banner-content">
+          <span class="banner-icon">🔔</span>
+          <p><strong>Enable Desktop Notifications:</strong> Get reminded for upcoming study sessions, deadlines, and break transitions even if StudyPulse is in the background.</p>
+        </div>
+        <div class="banner-actions">
+          <button id="enable-notifications-btn" class="btn btn-sm btn-primary">Enable Alerts</button>
+          <button id="dismiss-notifications-btn" class="btn btn-sm btn-subtle">Later</button>
+        </div>
+      </div>
+
+      <!-- Main Dynamic Content Views -->
+      <main id="main-content" class="main-content">
+        
+        <!-- 1. FOCUS SESSION VIEW -->
+        <section id="focus-view" class="view-panel active">
+          <div class="focus-grid">
+            
+            <!-- Center Focus Timer Card -->
+            <div class="card focus-card card-float" data-tilt-3d data-tilt-max="7" data-tilt-scale="1.015">
+              <!-- Mode Selection Pills -->
+              <div class="timer-mode-selector" role="tablist">
+                <button class="mode-tab active" data-mode="pomodoro" role="tab" aria-selected="true">Pomodoro (25m)</button>
+                <button class="mode-tab" data-mode="shortBreak" role="tab" aria-selected="false">Short Break (5m)</button>
+                <button class="mode-tab" data-mode="longBreak" role="tab" aria-selected="false">Long Break (15m)</button>
+                <button class="mode-tab" data-mode="deepwork" role="tab" aria-selected="false">Deep Work (50m)</button>
+                <button class="mode-tab" data-mode="custom" role="tab" aria-selected="false">Custom</button>
+              </div>
+
+              <!-- Active Task Tag Picker -->
+              <div class="focus-task-selector">
+                <label for="focus-task-input" class="sr-only">Focus Subject / Task</label>
+                <div class="task-input-wrapper">
+                  <span class="task-icon">🎯</span>
+                  <input type="text" id="focus-task-input" placeholder="What are you mastering in this session?" maxlength="80">
+                  <select id="focus-subject-tag" class="subject-select" aria-label="Subject Tag">
+                    <option value="General">📚 General Study</option>
+                    <option value="Mathematics">📐 Mathematics</option>
+                    <option value="Science">🧬 Science</option>
+                    <option value="Coding">💻 Coding & Tech</option>
+                    <option value="Languages">🗣️ Languages</option>
+                    <option value="Exam Prep">📝 Exam Prep</option>
+                    <option value="Reading">📖 Reading & Notes</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Timer Dial / Display -->
+              <div class="timer-display-container">
+                <svg class="timer-progress-ring" viewBox="0 0 320 320">
+                  <circle class="timer-ring-bg" cx="160" cy="160" r="140" />
+                  <circle id="timer-ring-progress" class="timer-ring-bar" cx="160" cy="160" r="140" />
+                </svg>
+
+                <div class="timer-center-content">
+                  <span id="timer-session-label" class="session-type-badge">Focus Time</span>
+                  <div id="timer-display" class="timer-digits mono-num">25:00</div>
+                  <span id="timer-cycle-counter" class="cycle-subtext">Session 1 of 4</span>
+                </div>
+              </div>
+
+              <!-- Timer Controls -->
+              <div class="timer-controls">
+                <button id="timer-reset-btn" class="icon-btn-lg" title="Reset Session (R)" aria-label="Reset Timer">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                </button>
+
+                <button id="timer-toggle-btn" class="btn btn-primary btn-xl timer-main-btn" aria-label="Start or Pause Timer">
+                  <svg id="timer-play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <svg id="timer-pause-icon" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  <span id="timer-toggle-text">Start Focus</span>
+                </button>
+
+                <button id="timer-skip-btn" class="icon-btn-lg" title="Skip to Next Interval (S)" aria-label="Skip to Next">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+                </button>
+
+                <button id="timer-fullscreen-btn" class="icon-btn-lg" title="Fullscreen Zen Mode (F)" aria-label="Fullscreen Zen Mode">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                </button>
+              </div>
+
+              <!-- Key Shortcuts Legend -->
+              <div class="shortcuts-hint">
+                <span><kbd>Space</kbd> Start/Pause</span>
+                <span><kbd>R</kbd> Reset</span>
+                <span><kbd>S</kbd> Skip</span>
+                <span><kbd>F</kbd> Zen View</span>
+              </div>
+            </div>
+
+            <!-- Focus Companion Sidebar: Scratchpad & Quick Reminders -->
+            <div class="focus-side-column">
+              <!-- Quick Scratchpad for Session Notes -->
+              <div class="card scratchpad-card">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <h3>Session Scratchpad</h3>
+                  </div>
+                  <span class="subtext-saved" id="scratchpad-status">Saved</span>
+                </div>
+                <textarea id="session-scratchpad" placeholder="Jot down quick thoughts, formulas, or sudden distractions to revisit later without breaking focus..."></textarea>
+                <div class="scratchpad-actions">
+                  <button id="clear-scratchpad-btn" class="text-btn-xs text-danger">Clear Notes</button>
+                  <button id="copy-scratchpad-btn" class="text-btn-xs">Copy</button>
+                </div>
+              </div>
+
+              <!-- Today's Priority Reminders Mini-List -->
+              <div class="card priority-mini-card">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <h3>Due Today</h3>
+                  </div>
+                  <button class="text-btn-xs" data-switch-view="reminders-view">View All</button>
+                </div>
+                <div id="mini-tasks-container" class="mini-task-list">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- Daily Goal Progress -->
+              <div class="card daily-goal-card">
+                <div class="daily-goal-header">
+                  <span>Daily Study Target</span>
+                  <span id="daily-goal-metric" class="daily-goal-val">0 / 120 mins</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div id="daily-goal-fill" class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- 2. REMINDERS & TASK MANAGER VIEW -->
+        <section id="reminders-view" class="view-panel">
+          <div class="section-top-bar">
+            <div class="filter-pills" role="tablist">
+              <button class="filter-tab active" data-filter="all">All Reminders (<span id="count-all">0</span>)</button>
+              <button class="filter-tab" data-filter="today">Today (<span id="count-today">0</span>)</button>
+              <button class="filter-tab" data-filter="upcoming">Upcoming (<span id="count-upcoming">0</span>)</button>
+              <button class="filter-tab" data-filter="overdue">Overdue (<span id="count-overdue">0</span>)</button>
+              <button class="filter-tab" data-filter="completed">Completed (<span id="count-completed">0</span>)</button>
+            </div>
+
+            <div class="action-btn-group">
+              <div class="search-input-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="reminders-search-input" placeholder="Search tasks or tags...">
+              </div>
+              <button id="open-new-reminder-modal-btn" class="btn btn-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Add Reminder</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Reminders Grid & List View -->
+          <div class="reminders-container">
+            <div id="reminders-list" class="reminders-list">
+              <!-- Dynamic Reminder Items -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- 3. TIMETABLE & PLANNER VIEW -->
+        <section id="planner-view" class="view-panel">
+          <div class="planner-layout">
+            
+            <!-- Left: Weekly Timetable Grid -->
+            <div class="card timetable-card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <h3>Weekly Study Timetable</h3>
+                </div>
+                <button id="add-timetable-slot-btn" class="btn btn-subtle btn-sm">+ Add Study Slot</button>
+              </div>
+
+              <!-- Timetable Grid -->
+              <div class="timetable-wrapper">
+                <div class="timetable-grid" id="timetable-grid">
+                  <!-- Generated by planner.js -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Exam Countdowns & Spaced Repetition -->
+            <div class="planner-side-column">
+              <!-- Exam Countdown Section -->
+              <div class="card exam-countdown-card">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <h3>Exam & Milestone Deadlines</h3>
+                  </div>
+                  <button id="add-exam-btn" class="text-btn-xs">+ Add Target</button>
+                </div>
+                <div id="exam-countdown-list" class="exam-list">
+                  <!-- Dynamic Exam Cards -->
+                </div>
+              </div>
+
+              <!-- Spaced Repetition / Review Planner -->
+              <div class="card spaced-rep-card">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    <h3>Spaced Repetition Reviews</h3>
+                  </div>
+                  <button id="add-spaced-topic-btn" class="text-btn-xs">+ Track Topic</button>
+                </div>
+                <p class="section-caption">Reviewing at 1d, 3d, 7d, and 30d intervals for 100% memory retention.</p>
+                <div id="spaced-topics-list" class="spaced-topics-list">
+                  <!-- Dynamic Topics -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- 4. FLASHCARD DECKS VIEW -->
+        <section id="flashcards-view" class="view-panel">
+          <div id="flashcards-hub-view">
+            <div class="section-top-bar">
+              <div>
+                <h2>Active Recall Decks</h2>
+                <p class="section-caption">Master your definitions, formulas, and concepts with 3D flashcards.</p>
+              </div>
+              <button id="create-deck-btn" class="btn btn-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Create New Deck</span>
+              </button>
+            </div>
+
+            <!-- Decks Grid -->
+            <div id="decks-grid" class="decks-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Flashcard Active Study Arena (Hidden until deck opened) -->
+          <div id="flashcard-study-arena" class="flashcard-arena hidden">
+            <div class="arena-header">
+              <button id="close-study-arena-btn" class="btn btn-subtle btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                <span>Exit Deck</span>
+              </button>
+              <div class="arena-title-info">
+                <h3 id="arena-deck-title">Deck Title</h3>
+                <span id="arena-progress-text">Card 1 of 10</span>
+              </div>
+              <button id="add-card-to-current-deck-btn" class="btn btn-subtle btn-sm">+ Add Card</button>
+            </div>
+
+            <!-- Flashcard 3D Interactive Card -->
+            <div class="flashcard-perspective-container">
+              <div id="active-flashcard" class="flashcard-flipper">
+                <div class="flashcard-face flashcard-front">
+                  <div class="card-face-tag">Question (Click or Press Space to Flip)</div>
+                  <div id="card-front-content" class="card-body-text">Loading question...</div>
+                  <div class="flip-hint">🔄 Tap to Reveal Answer</div>
+                </div>
+                <div class="flashcard-face flashcard-back">
+                  <div class="card-face-tag">Answer</div>
+                  <div id="card-back-content" class="card-body-text">Loading answer...</div>
+                  <div class="flip-hint">Rate your confidence below</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Self-Assessment Rating Controls -->
+            <div id="arena-rating-controls" class="rating-controls">
+              <button class="btn btn-rating rating-again" data-score="again">
+                <span class="rating-icon">❌</span>
+                <span>Again (1d)</span>
+              </button>
+              <button class="btn btn-rating rating-hard" data-score="hard">
+                <span class="rating-icon">⚠️</span>
+                <span>Hard (3d)</span>
+              </button>
+              <button class="btn btn-rating rating-good" data-score="good">
+                <span class="rating-icon">👍</span>
+                <span>Good (7d)</span>
+              </button>
+              <button class="btn btn-rating rating-easy" data-score="easy">
+                <span class="rating-icon">⭐</span>
+                <span>Easy (14d)</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- 5. HABITS & GAMIFICATION VIEW -->
+        <section id="habits-view" class="view-panel">
+          <div class="habits-layout">
+            
+            <!-- Daily Study Habits Checklist -->
+            <div class="card habits-card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  <h3>Daily Study Habits</h3>
+                </div>
+                <button id="add-habit-btn" class="btn btn-subtle btn-sm">+ Add Habit</button>
+              </div>
+              <p class="section-caption">Build unstoppable consistency. Reset every day at midnight.</p>
+
+              <div id="habits-list" class="habits-list">
+                <!-- Dynamic Habits -->
+              </div>
+            </div>
+
+            <!-- Achievements & Badges Showcase -->
+            <div class="card badges-card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                  <h3>Achievements & Badges</h3>
+                </div>
+                <span class="badge-count" id="unlocked-badges-count">0 / 8 Unlocked</span>
+              </div>
+              
+              <div id="badges-grid" class="badges-grid">
+                <!-- Dynamic Badges -->
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- 6. INSIGHTS & ANALYTICS VIEW (LEETCODE STYLE) -->
+        <section id="analytics-view" class="view-panel">
+          
+          <!-- LeetCode Profile Header Card -->
+          <div class="card leetcode-profile-card">
+            <div class="leetcode-profile-left">
+              <div class="leetcode-avatar">
+                <span class="avatar-icon">🎓</span>
+                <span class="avatar-badge-lvl" id="lc-avatar-lvl">L1</span>
+              </div>
+              <div class="leetcode-user-meta">
+                <div class="user-handle-row">
+                  <h2 id="lc-username">Focused Scholar</h2>
+                  <span class="rank-badge" id="lc-rank-badge">🏆 Top 4.2%</span>
+                </div>
+                <div class="user-sub-stats">
+                  <span>Rating: <strong id="lc-rating-val" class="mono-num">1,842</strong></span>
+                  <span>•</span>
+                  <span>Streak: <strong id="lc-streak-val" class="mono-num">3 Days 🔥</strong></span>
+                  <span>•</span>
+                  <span>Global Rank: <strong id="lc-global-rank" class="mono-num">#1,248</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="leetcode-profile-right">
+              <div class="leetcode-quick-stat">
+                <span class="stat-num mono-num" id="lc-total-time-stat">4h 35m</span>
+                <span class="stat-lbl">Total Focus</span>
+              </div>
+              <div class="leetcode-quick-stat">
+                <span class="stat-num mono-num" id="lc-completion-rate">96.4%</span>
+                <span class="stat-lbl">Efficiency Rate</span>
+              </div>
+              <div class="leetcode-quick-stat">
+                <span class="stat-num mono-num" id="lc-active-days-stat">12</span>
+                <span class="stat-lbl">Active Days</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Row: LeetCode Donut Card (Left) & Badges/Productivity Card (Right) -->
+          <div class="leetcode-analytics-grid-2">
+            
+            <!-- 1. The Iconic LeetCode Multi-Arc Donut Gauge -->
+            <div class="card leetcode-donut-card">
+              <div class="card-header">
+                <h3>Study Session Distribution</h3>
+                <span class="subtext-muted" id="lc-total-solved-subtitle">4 Total Sessions</span>
+              </div>
+
+              <div class="leetcode-donut-body">
+                <!-- Circular Multi-Arc Gauge -->
+                <div class="lc-donut-container">
+                  <svg class="lc-donut-svg" viewBox="0 0 160 160">
+                    <circle class="lc-donut-track" cx="80" cy="80" r="62" />
+                    <!-- Easy Arc (Teal) -->
+                    <circle id="lc-arc-easy" class="lc-donut-arc arc-easy" cx="80" cy="80" r="62" stroke-dasharray="390" stroke-dashoffset="390" />
+                    <!-- Medium Arc (Yellow) -->
+                    <circle id="lc-arc-medium" class="lc-donut-arc arc-medium" cx="80" cy="80" r="62" stroke-dasharray="390" stroke-dashoffset="390" />
+                    <!-- Hard Arc (Red) -->
+                    <circle id="lc-arc-hard" class="lc-donut-arc arc-hard" cx="80" cy="80" r="62" stroke-dasharray="390" stroke-dashoffset="390" />
+                  </svg>
+                  <div class="lc-donut-center">
+                    <span class="lc-donut-number mono-num" id="lc-donut-count">4</span>
+                    <span class="lc-donut-label">Sessions</span>
+                    <span class="lc-donut-sub mono-num" id="lc-donut-sub-time">4h 35m</span>
+                  </div>
+                </div>
+
+                <!-- Difficulty Progress Rows -->
+                <div class="lc-difficulty-rows">
+                  <!-- Easy -->
+                  <div class="lc-diff-row diff-easy">
+                    <div class="diff-header">
+                      <span class="diff-title">Easy <span class="diff-sub">(Short / Review)</span></span>
+                      <span class="diff-fraction mono-num" id="lc-easy-fraction">1 <span class="dim">/ 4</span></span>
+                    </div>
+                    <div class="diff-bar-bg">
+                      <div class="diff-bar-fill fill-easy" id="lc-easy-bar" style="width: 25%;"></div>
+                    </div>
+                    <div class="diff-beats" id="lc-easy-beats">Beats 76.5% of students</div>
+                  </div>
+
+                  <!-- Medium -->
+                  <div class="lc-diff-row diff-medium">
+                    <div class="diff-header">
+                      <span class="diff-title">Medium <span class="diff-sub">(Pomodoro 25m)</span></span>
+                      <span class="diff-fraction mono-num" id="lc-medium-fraction">2 <span class="dim">/ 4</span></span>
+                    </div>
+                    <div class="diff-bar-bg">
+                      <div class="diff-bar-fill fill-medium" id="lc-medium-bar" style="width: 50%;"></div>
+                    </div>
+                    <div class="diff-beats" id="lc-medium-beats">Beats 88.2% of students</div>
+                  </div>
+
+                  <!-- Hard -->
+                  <div class="lc-diff-row diff-hard">
+                    <div class="diff-header">
+                      <span class="diff-title">Hard <span class="diff-sub">(Deep Work 50m+)</span></span>
+                      <span class="diff-fraction mono-num" id="lc-hard-fraction">1 <span class="dim">/ 4</span></span>
+                    </div>
+                    <div class="diff-bar-bg">
+                      <div class="diff-bar-fill fill-hard" id="lc-hard-bar" style="width: 25%;"></div>
+                    </div>
+                    <div class="diff-beats" id="lc-hard-beats">Beats 95.1% of students</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Badges & Contest Rating Box -->
+            <div class="card leetcode-contest-card">
+              <div class="card-header">
+                <h3>Study Rank & Badges</h3>
+                <span class="badge-tag" style="background: var(--color-warning-subtle); color: var(--color-warning);">Knight Tier</span>
+              </div>
+              
+              <div class="contest-rating-display">
+                <div class="contest-rating-left">
+                  <span class="contest-rating-num mono-num" id="lc-contest-rating">1,842</span>
+                  <span class="contest-rating-label">Study Score Rating</span>
+                </div>
+                <div class="contest-ranking-info">
+                  <div>Global Ranking: <strong class="mono-num">Top 4.2%</strong></div>
+                  <div>Attended Contests / Goals: <strong class="mono-num" id="lc-completed-goals-count">15</strong></div>
+                </div>
+              </div>
+
+              <!-- Unlocked Medals Row -->
+              <div class="lc-badges-row" id="lc-medals-row">
+                <!-- Dynamically populated medals -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Full Width: LeetCode Contribution Heatmap Calendar -->
+          <div class="card leetcode-heatmap-card">
+            <div class="heatmap-card-header">
+              <div class="heatmap-title-group">
+                <h3 id="lc-heatmap-total-count">248 Study Minutes in the Last Year</h3>
+                <div class="heatmap-meta-stats">
+                  <span>Total Active Days: <strong id="lc-meta-active-days" class="mono-num">4</strong></span>
+                  <span>•</span>
+                  <span>Max Streak: <strong id="lc-meta-max-streak" class="mono-num">3 Days</strong></span>
+                  <span>•</span>
+                  <span>Current Streak: <strong id="lc-meta-current-streak" class="mono-num">3 Days</strong></span>
+                </div>
+              </div>
+
+              <div class="heatmap-controls">
+                <select id="lc-heatmap-range-select" class="select-input-sm" aria-label="Heatmap Range">
+                  <option value="year">Full Year (52 Weeks)</option>
+                  <option value="6months">Past 6 Months</option>
+                  <option value="3months">Past 3 Months</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- LeetCode Heatmap Scroll Area -->
+            <div class="lc-heatmap-scroll-wrapper">
+              <div class="lc-heatmap-calendar" id="lc-full-heatmap">
+                <!-- Dynamically generated 52-week SVG/Grid -->
+              </div>
+            </div>
+
+            <!-- Heatmap Footer Legend & Tooltip -->
+            <div class="lc-heatmap-footer">
+              <div class="lc-heatmap-tooltip" id="lc-hover-tooltip">Hover over a square to view daily focus log</div>
+              <div class="lc-heatmap-legend">
+                <span>Less</span>
+                <span class="legend-cell level-0"></span>
+                <span class="legend-cell level-1"></span>
+                <span class="legend-cell level-2"></span>
+                <span class="legend-cell level-3"></span>
+                <span class="legend-cell level-4"></span>
+                <span>More</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Subject Skills Breakdown & Recent Study Submissions Table -->
+          <div class="leetcode-bottom-grid">
+            
+            <!-- Subject Skills / Category Breakdown (Like LeetCode Topics) -->
+            <div class="card leetcode-skills-card">
+              <div class="card-header">
+                <h3>Study Topics & Subject Mastery</h3>
+              </div>
+              <div id="lc-subject-skills-list" class="lc-skills-list">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+
+            <!-- Recent Submissions Table -->
+            <div class="card leetcode-submissions-card">
+              <div class="card-header">
+                <h3>Recent Study Submissions</h3>
+                <span class="subtext-muted">Live Activity Log</span>
+              </div>
+              <div class="table-responsive">
+                <table class="lc-submissions-table">
+                  <thead>
+                    <tr>
+                      <th>Topic / Task</th>
+                      <th>Subject</th>
+                      <th>Status</th>
+                      <th>Duration</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="lc-submissions-tbody">
+                    <!-- Dynamically populated -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- 7. SETTINGS & DATA MANAGEMENT VIEW -->
+        <section id="settings-view" class="view-panel">
+          <div class="settings-grid">
+            
+            <div class="card settings-card">
+              <div class="card-header">
+                <h3>🎨 Appearance & Themes</h3>
+              </div>
+              <div class="setting-item">
+                <div>
+                  <h4>Color Theme</h4>
+                  <p class="setting-desc">Select your preferred color aesthetic</p>
+                </div>
+                <select id="theme-selector-setting" class="select-input">
+                  <option value="dark">🌙 Dark Slate (Default)</option>
+                  <option value="light">☀️ Warm Minimalist Light</option>
+                  <option value="forest">🌲 Forest Zen Deep Green</option>
+                  <option value="cyber">⚡ Cyber Focus Navy</option>
+                </select>
+              </div>
+
+              <div class="setting-item">
+                <div>
+                  <h4>Typography Font Style</h4>
+                  <p class="setting-desc">Choose a soothing, calm reading typeface</p>
+                </div>
+                <select id="font-selector-setting" class="select-input">
+                  <option value="lexend" selected>🍃 Lexend & Plus Jakarta (Calm & Open - Default)</option>
+                  <option value="jakarta">✨ Plus Jakarta Sans (Gentle Rounded)</option>
+                  <option value="dmsans">🌸 DM Sans (Mindful & Soothing)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card settings-card">
+              <div class="card-header">
+                <h3>🔔 Notifications & Sound Alerts</h3>
+              </div>
+              <div class="setting-item">
+                <div>
+                  <h4>Timer Completion Chime</h4>
+                  <p class="setting-desc">Play gentle bell chime when a focus session finishes</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="setting-timer-sound" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="setting-item">
+                <div>
+                  <h4>Reminder Alarm Sound</h4>
+                  <p class="setting-desc">Play attention chime when a reminder is due</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="setting-reminder-sound" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="setting-item">
+                <div>
+                  <h4>Test Sound Synthesis</h4>
+                  <p class="setting-desc">Check your audio output</p>
+                </div>
+                <button id="test-chime-btn" class="btn btn-subtle btn-sm">🔊 Test Chime</button>
+              </div>
+            </div>
+
+            <div class="card settings-card">
+              <div class="card-header">
+                <h3>⏱️ Custom Timer Durations</h3>
+              </div>
+              <div class="timer-duration-settings">
+                <div class="duration-input-group">
+                  <label for="setting-pomodoro-dur">Focus Duration (mins)</label>
+                  <input type="number" id="setting-pomodoro-dur" min="1" max="120" value="25">
+                </div>
+                <div class="duration-input-group">
+                  <label for="setting-shortbreak-dur">Short Break (mins)</label>
+                  <input type="number" id="setting-shortbreak-dur" min="1" max="60" value="5">
+                </div>
+                <div class="duration-input-group">
+                  <label for="setting-longbreak-dur">Long Break (mins)</label>
+                  <input type="number" id="setting-longbreak-dur" min="1" max="90" value="15">
+                </div>
+                <button id="save-durations-btn" class="btn btn-primary btn-sm">Save Durations</button>
+              </div>
+            </div>
+
+            <div class="card settings-card">
+              <div class="card-header">
+                <h3>💾 Data Backup & Restore</h3>
+              </div>
+              <p class="setting-desc">Your data is stored 100% locally in your browser. Export anytime to backup or switch computers.</p>
+              <div class="backup-btn-row">
+                <button id="export-backup-btn" class="btn btn-subtle">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Export JSON Backup</span>
+                </button>
+
+                <label for="import-backup-file" class="btn btn-subtle file-label-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Import JSON Backup</span>
+                  <input type="file" id="import-backup-file" accept=".json" class="hidden">
+                </label>
+
+                <button id="reset-all-data-btn" class="btn btn-danger-outline">
+                  Reset All Data
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Mobile Bottom App Navigation Bar (Phones / Tablets) -->
+      <nav id="mobile-bottom-nav" class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <button class="mob-nav-item active" data-view="focus-view" id="mob-nav-focus">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Focus</span>
+        </button>
+
+        <button class="mob-nav-item" data-view="reminders-view" id="mob-nav-reminders">
+          <div class="mob-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="mob-badge-dot" id="mob-pending-dot" style="display:none;"></span>
+          </div>
+          <span>Tasks</span>
+        </button>
+
+        <button class="mob-nav-item" data-view="planner-view" id="mob-nav-planner">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Planner</span>
+        </button>
+
+        <button class="mob-nav-item" data-view="flashcards-view" id="mob-nav-flashcards">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Cards</span>
+        </button>
+
+        <button class="mob-nav-item" data-view="analytics-view" id="mob-nav-analytics">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>Stats</span>
+        </button>
+
+        <button class="mob-nav-item" id="mob-nav-menu" aria-label="Open More Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          <span>More</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Backdrop Overlay for Mobile Sidebar Drawer -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+  </div>
+
+
+  <!-- FULLSCREEN ZEN FOCUS OVERLAY -->
+  <div id="zen-focus-overlay" class="zen-overlay hidden">
+    <div class="zen-top-bar">
+      <div class="zen-task-title" id="zen-task-title">📐 Advanced Calculus - Chapter 4</div>
+      <button id="exit-zen-btn" class="icon-btn-zen" title="Exit Zen Mode (Esc or F)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="zen-center">
+      <div class="zen-session-badge" id="zen-session-type">Deep Work Session</div>
+      <div class="zen-timer-digits mono-num" id="zen-timer-digits">25:00</div>
+      
+      <div class="zen-controls">
+        <button id="zen-toggle-btn" class="btn btn-primary btn-xl">Pause</button>
+        <button id="zen-skip-btn" class="btn btn-subtle btn-lg">Skip Interval</button>
+      </div>
+    </div>
+
+    <div class="zen-bottom-bar">
+      <div class="zen-ambient-status" id="zen-ambient-label">Ambient Sound: Rain Shower</div>
+      <span class="zen-subtext">Press <kbd>Esc</kbd> or <kbd>F</kbd> to return</span>
+    </div>
+  </div>
+
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. ADD / EDIT REMINDER MODAL -->
+  <dialog id="reminder-dialog" class="custom-dialog">
+    <form id="reminder-form" method="dialog">
+      <div class="dialog-header">
+        <h3 id="reminder-modal-title">Create Smart Reminder</h3>
+        <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
+      </div>
+
+      <div class="dialog-body">
+        <input type="hidden" id="reminder-edit-id">
+
+        <div class="form-group">
+          <label for="reminder-title-input">Reminder / Task Title *</label>
+          <input type="text" id="reminder-title-input" required placeholder="e.g., Submit Chemistry Lab Report, Review Chapter 3">
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="reminder-date-input">Due Date *</label>
+            <input type="date" id="reminder-date-input" required>
+          </div>
+          <div class="form-group">
+            <label for="reminder-time-input">Due Time *</label>
+            <input type="time" id="reminder-time-input" required value="09:00">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="reminder-subject-input">Subject / Tag</label>
+            <select id="reminder-subject-input">
+              <option value="General">📚 General</option>
+              <option value="Mathematics">📐 Mathematics</option>
+              <option value="Science">🧬 Science</option>
+              <option value="Coding">💻 Coding</option>
+              <option value="Languages">🗣️ Languages</option>
+              <option value="Exam Prep">📝 Exam Prep</option>
+              <option value="Assignment">📂 Assignment</option>
+              <option value="Personal">🌟 Personal Habit</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reminder-priority-input">Priority</label>
+            <select id="reminder-priority-input">
+              <option value="low">🟢 Low Priority</option>
+              <option value="medium" selected>🟡 Medium Priority</option>
+              <option value="high">🔴 High Priority (Urgent)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="reminder-recurrence-input">Repeat Interval</label>
+            <select id="reminder-recurrence-input">
+              <option value="none">Does not repeat</option>
+              <option value="daily">Every Day</option>
+              <option value="weekdays">Weekdays (Mon-Fri)</option>
+              <option value="weekly">Weekly</option>
+              <option value="spaced">Spaced Repetition (1d, 3d, 7d)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reminder-est-pomodoros">Est. Focus Blocks (25m each)</label>
+            <input type="number" id="reminder-est-pomodoros" min="1" max="10" value="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reminder-notes-input">Notes & Checkpoints (Optional)</label>
+          <textarea id="reminder-notes-input" rows="3" placeholder="Key references, page numbers, submission portal link..."></textarea>
+        </div>
+      </div>
+
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="save-reminder-btn">Save Reminder</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <!-- 2. CREATE / EDIT FLASHCARD DECK MODAL -->
+  <dialog id="deck-dialog" class="custom-dialog">
+    <form id="deck-form" method="dialog">
+      <div class="dialog-header">
+        <h3 id="deck-modal-title">Create Flashcard Deck</h3>
+        <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
+      </div>
+      <div class="dialog-body">
+        <input type="hidden" id="deck-edit-id">
+        <div class="form-group">
+          <label for="deck-title-input">Deck Name *</label>
+          <input type="text" id="deck-title-input" required placeholder="e.g., Organic Chemistry Reactions, GRE Vocab">
+        </div>
+        <div class="form-group">
+          <label for="deck-subject-input">Subject Category</label>
+          <input type="text" id="deck-subject-input" placeholder="e.g. Science, Medical, Engineering, History">
+        </div>
+        <div class="form-group">
+          <label for="deck-desc-input">Description</label>
+          <textarea id="deck-desc-input" rows="2" placeholder="Brief summary of what this deck covers..."></textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Deck</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <!-- 3. ADD CARD TO DECK MODAL -->
+  <dialog id="card-dialog" class="custom-dialog">
+    <form id="card-form" method="dialog">
+      <div class="dialog-header">
+        <h3>Add Flashcard</h3>
+        <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
+      </div>
+      <div class="dialog-body">
+        <input type="hidden" id="card-deck-id">
+        <div class="form-group">
+          <label for="card-front-input">Front / Question / Term *</label>
+          <textarea id="card-front-input" required rows="3" placeholder="What is the concept, term, or question?"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="card-back-input">Back / Answer / Definition *</label>
+          <textarea id="card-back-input" required rows="3" placeholder="The complete explanation or answer..."></textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Card</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <!-- 4. ADD TIMETABLE STUDY SLOT MODAL -->
+  <dialog id="timetable-dialog" class="custom-dialog">
+    <form id="timetable-form" method="dialog">
+      <div class="dialog-header">
+        <h3>Add Timetable Study Block</h3>
+        <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-group">
+          <label for="slot-day-select">Day of the Week</label>
+          <select id="slot-day-select">
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="slot-subject-input">Subject / Course Title *</label>
+          <input type="text" id="slot-subject-input" required placeholder="e.g. Linear Algebra, Neuroscience">
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="slot-start-time">Start Time</label>
+            <input type="time" id="slot-start-time" required value="09:00">
+          </div>
+          <div class="form-group">
+            <label for="slot-end-time">End Time</label>
+            <input type="time" id="slot-end-time" required value="10:30">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="slot-color-select">Color Accent</label>
+          <select id="slot-color-select">
+            <option value="blue">Blue</option>
+            <option value="emerald">Emerald Green</option>
+            <option value="amber">Amber Gold</option>
+            <option value="purple">Purple</option>
+            <option value="rose">Rose Red</option>
+          </select>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Block</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <!-- 5. ADD EXAM / TARGET MODAL -->
+  <dialog id="exam-dialog" class="custom-dialog">
+    <form id="exam-form" method="dialog">
+      <div class="dialog-header">
+        <h3>Add Exam / Deadline Target</h3>
+        <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-group">
+          <label for="exam-title-input">Exam / Milestone Name *</label>
+          <input type="text" id="exam-title-input" required placeholder="e.g. Midterm Physics, SAT Exam, Final Thesis">
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="exam-date-input">Exam Date *</label>
+            <input type="date" id="exam-date-input" required>
+          </div>
+          <div class="form-group">
+            <label for="exam-time-input">Exam Time</label>
+            <input type="time" id="exam-time-input" value="09:00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="exam-target-score">Target Goal / Grade (Optional)</label>
+          <input type="text" id="exam-target-score" placeholder="e.g. Grade A+, 95th Percentile">
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
+        <button type="submit" class="btn btn-primary">Set Target</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <!-- 6. ADD DAILY HABIT MODAL -->
+  <dialog id="habit-dialog" class="custom-dialog">
+    <form id="habit-form" method="dialog">
+      <div class="dialog-header">
+        <h3>Create Daily Study Habit</h3>
+        <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-group">
+          <label for="habit-title-input">Habit Name *</label>
+          <input type="text" id="habit-title-input" required placeholder="e.g. Read 20 mins, Practice 5 LeetCode, Review Vocab">
+        </div>
+        <div class="form-group">
+          <label for="habit-icon-select">Icon Symbol</label>
+          <select id="habit-icon-select">
+            <option value="📖">📖 Reading</option>
+            <option value="💻">💻 Coding / Tech</option>
+            <option value="✍️">✍️ Writing / Notes</option>
+            <option value="📐">📐 Math / Formulas</option>
+            <option value="💧">💧 Hydration & Health</option>
+            <option value="🧠">🧠 Mental Recall</option>
+            <option value="🏃">🏃 Exercise & Break</option>
+          </select>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Habit</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <!-- 7. ADD SPACED TOPIC MODAL -->
+  <dialog id="spaced-topic-dialog" class="custom-dialog">
+    <form id="spaced-topic-form" method="dialog">
+      <div class="dialog-header">
+        <h3>Track Spaced Repetition Topic</h3>
+        <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-group">
+          <label for="topic-title-input">Topic / Chapter Name *</label>
+          <input type="text" id="topic-title-input" required placeholder="e.g. Cell Division & Mitosis, Bayes Theorem">
+        </div>
+        <div class="form-group">
+          <label for="topic-subject-input">Subject</label>
+          <input type="text" id="topic-subject-input" placeholder="e.g. Biology, Probability, Law">
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
+        <button type="submit" class="btn btn-primary">Start Tracking</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <!-- IN-APP TOAST ALERTS CONTAINER -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

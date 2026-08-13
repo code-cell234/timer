@@ -1,0 +1,10 @@
+{
+  "appId": "com.studypulse.app",
+  "appName": "StudyPulse",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}
