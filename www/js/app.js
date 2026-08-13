@@ -5,6 +5,7 @@
 
 import { storage } from './storage.js';
 import { audioService } from './audio.js';
+import { notificationService } from './notifications.js';
 import { TimerModule } from './timer.js';
 import { RemindersModule } from './reminders.js';
 import { PlannerModule } from './planner.js';
@@ -472,44 +473,43 @@ class StudyPulseApp {
     }, 5000);
   }
 
-  // Browser Push Notifications
+  // Native & Browser Push Notifications
   checkNotificationPermission() {
     const banner = document.getElementById('notification-banner');
     const enableBtn = document.getElementById('enable-notifications-btn');
     const dismissBtn = document.getElementById('dismiss-notifications-btn');
 
-    if (!('Notification' in window)) return;
+    notificationService.init().then(() => {
+      if (!notificationService.isPermissionGranted && banner) {
+        banner.classList.remove('hidden');
 
-    if (Notification.permission === 'default' && banner) {
-      banner.classList.remove('hidden');
-
-      if (enableBtn) {
-        enableBtn.addEventListener('click', () => {
-          Notification.requestPermission().then((perm) => {
+        if (enableBtn) {
+          enableBtn.addEventListener('click', async () => {
+            const granted = await notificationService.requestPermission();
             banner.classList.add('hidden');
-            if (perm === 'granted') {
-              this.showToast('Notifications Active! 🔔', 'You will now receive desktop study reminders.', 'success');
+            if (granted) {
+              this.showToast('Notifications Active! 🔔', 'You will now receive reminders & timer alerts.', 'success');
+              const state = storage.getState();
+              notificationService.syncAllReminders(state.reminders);
             }
           });
-        });
-      }
+        }
 
-      if (dismissBtn) {
-        dismissBtn.addEventListener('click', () => {
-          banner.classList.add('hidden');
-        });
+        if (dismissBtn) {
+          dismissBtn.addEventListener('click', () => {
+            banner.classList.add('hidden');
+          });
+        }
+      } else {
+        const state = storage.getState();
+        notificationService.syncAllReminders(state.reminders);
       }
-    }
+    });
   }
 
   sendBrowserNotification(title, options = {}) {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      try {
-        new Notification(title, options);
-      } catch (e) {
-        console.warn('Browser notification failed:', e);
-      }
-    }
+    const body = options.body || '';
+    notificationService.sendInstantNotification(title, body, options);
   }
 }
 

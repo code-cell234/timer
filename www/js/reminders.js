@@ -5,6 +5,7 @@
 
 import { storage } from './storage.js';
 import { audioService } from './audio.js';
+import { notificationService } from './notifications.js';
 
 export class RemindersModule {
   constructor(appCoordinator) {
@@ -142,6 +143,7 @@ export class RemindersModule {
           estPomodoros,
           notes
         };
+        notificationService.scheduleReminder(state.reminders[index]);
       }
       this.app.showToast('Reminder Updated', `Updated "${title}"`, 'info');
     } else {
@@ -160,6 +162,7 @@ export class RemindersModule {
         createdAt: new Date().toISOString()
       };
       state.reminders.unshift(newReminder);
+      notificationService.scheduleReminder(newReminder);
       this.app.showToast('Reminder Scheduled', `Set alert for ${title} at ${dueTime}`, 'success');
       storage.addXP(10);
     }
@@ -176,6 +179,7 @@ export class RemindersModule {
     reminder.completed = !reminder.completed;
 
     if (reminder.completed) {
+      notificationService.cancelReminder(id);
       storage.addXP(15);
       this.app.showToast('Task Completed! ✅', `+15 XP for finishing "${reminder.title}"`, 'success');
 
@@ -183,6 +187,8 @@ export class RemindersModule {
       if (reminder.recurrence && reminder.recurrence !== 'none') {
         this.generateNextRecurrence(reminder, state);
       }
+    } else {
+      notificationService.scheduleReminder(reminder);
     }
 
     storage.save(state);
@@ -209,12 +215,14 @@ export class RemindersModule {
     };
 
     state.reminders.push(recurringClone);
+    notificationService.scheduleReminder(recurringClone);
   }
 
   deleteReminder(id) {
     if (confirm('Are you sure you want to delete this reminder?')) {
       const state = storage.getState();
       state.reminders = state.reminders.filter((r) => r.id !== id);
+      notificationService.cancelReminder(id);
       storage.save(state);
       this.app.showToast('Deleted', 'Reminder removed.', 'info');
     }
@@ -231,6 +239,7 @@ export class RemindersModule {
     reminder.dueDate = now.toISOString().split('T')[0];
     reminder.dueTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     
+    notificationService.scheduleReminder(reminder);
     storage.save(state);
     this.app.showToast('Snoozed ⏰', `Snoozed "${reminder.title}" for ${mins} minutes.`, 'info');
   }

@@ -25,6 +25,7 @@ const APP_SHELL = [
   '/js/habits.js',
   '/js/analytics.js',
   '/js/tilt3d.js',
+  '/js/notifications.js',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
 ];
@@ -93,3 +94,21 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// ── NOTIFICATION CLICK: Focus open window or open app ───────
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
+    })
+  );
+});
+
