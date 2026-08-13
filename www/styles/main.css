@@ -25,6 +25,12 @@
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.2);
   --shadow-glow-primary: 0 0 24px rgba(59, 130, 246, 0.25);
+
+  /* Safe Area Insets (for Android Notch, Punch-hole Camera & Status Bar) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 /* ================= THEMES (HSL BASED) ================= */
@@ -284,10 +290,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .app-layout {
   display: flex;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   background-color: var(--bg-app);
   position: relative;
   overflow: hidden;
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 /* Sidebar Styles */
@@ -300,6 +309,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   flex-direction: column;
   height: 100%;
   z-index: 50;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
   transition: transform var(--transition-smooth);
 }
 
@@ -532,11 +543,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 /* Top Header */
 .top-header {
-  height: 68px;
-  min-height: 68px;
+  height: calc(68px + var(--safe-top));
+  min-height: calc(68px + var(--safe-top));
   background-color: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-subtle);
-  padding: 0 1.75rem;
+  padding: var(--safe-top) 1.75rem 0 1.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -665,8 +676,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(56px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: calc(56px + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
   background-color: var(--bg-sidebar);
   border-top: 1px solid var(--border-subtle);
   z-index: 40;
@@ -751,9 +762,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   }
 
   .top-header {
-    padding: 0 1.25rem;
-    height: 60px;
-    min-height: 60px;
+    padding: var(--safe-top) 1.25rem 0 1.25rem;
+    height: calc(60px + var(--safe-top));
+    min-height: calc(60px + var(--safe-top));
   }
 }
 
@@ -764,13 +775,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   }
 
   .main-content {
-    padding: 1rem 0.85rem calc(72px + env(safe-area-inset-bottom, 0px)) 0.85rem;
+    padding: 1rem 0.85rem calc(72px + var(--safe-bottom)) 0.85rem;
   }
 
   .top-header {
-    padding: 0 0.85rem;
-    height: 56px;
-    min-height: 56px;
+    padding: var(--safe-top) 0.85rem 0 0.85rem;
+    height: calc(56px + var(--safe-top));
+    min-height: calc(56px + var(--safe-top));
   }
 
   .page-title {
@@ -809,7 +820,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 /* Small Phones (<= 480px) */
 @media (max-width: 480px) {
   .main-content {
-    padding: 0.75rem 0.65rem calc(72px + env(safe-area-inset-bottom, 0px)) 0.65rem;
+    padding: 0.75rem 0.65rem calc(72px + var(--safe-bottom)) 0.65rem;
   }
 
   .card {
