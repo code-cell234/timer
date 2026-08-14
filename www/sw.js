@@ -4,7 +4,7 @@
  * All app shell assets are pre-cached on install.
  */
 
-const CACHE_NAME = 'studypulse-v1';
+const CACHE_NAME = 'studypulse-v4';
 
 // All assets to pre-cache (app shell)
 const APP_SHELL = [
@@ -26,6 +26,7 @@ const APP_SHELL = [
   '/js/analytics.js',
   '/js/tilt3d.js',
   '/js/notifications.js',
+  '/js/ai-calendar-parser.js',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
 ];

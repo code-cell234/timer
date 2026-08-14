@@ -29,6 +29,10 @@ export class PlannerModule {
     this.eventsCountHeading = document.getElementById('events-count-heading');
     this.currentFilterBadge = document.getElementById('current-filter-badge');
 
+    // Calendar Sections & Controls
+    this.controlsCard = document.querySelector('.calendar-controls-card');
+    this.metricsRow = document.getElementById('calendar-summary-metrics');
+
     // Summary Metric Elements
     this.metricTotalDays = document.getElementById('metric-total-days');
     this.metricTeachingDays = document.getElementById('metric-teaching-days');
@@ -455,8 +459,13 @@ export class PlannerModule {
         this.calendarSubheading.textContent = 'Upload your university academic calendar (Excel, PDF, Image, CSV) or paste circular text to sort events by program, track exams, and sync schedules.';
       }
       if (this.clearCalendarBtn) this.clearCalendarBtn.style.display = 'none';
+      if (this.controlsCard) this.controlsCard.style.display = 'none';
+      if (this.metricsRow) this.metricsRow.style.display = 'none';
       return;
     }
+
+    if (this.controlsCard) this.controlsCard.style.display = 'block';
+    if (this.metricsRow) this.metricsRow.style.display = 'grid';
 
     if (this.activeCalendarBadge) {
       this.activeCalendarBadge.textContent = `${this.activeCalendar.institution || 'Academic Calendar'} • ${this.activeCalendar.semester || this.activeCalendar.academicYear || 'Current Schedule'}`;
@@ -539,23 +548,13 @@ export class PlannerModule {
 
       this.eventsFeed.innerHTML = `
         <div class="calendar-empty-state">
-          <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📅</div>
-          <h3 style="font-weight:700; color: var(--text-primary); margin-bottom: 0.4rem;">No Academic Calendar Uploaded Yet</h3>
-          <p style="font-size:0.85rem; color: var(--text-muted); max-width: 480px; margin: 0 auto 1.25rem;">Upload your university academic calendar, timetable spreadsheet (Excel, CSV), PDF, or image to sort events by program and sync exam deadlines.</p>
-          <button class="btn btn-primary" id="empty-state-upload-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span>Upload Calendar / Timetable</span>
-          </button>
+          <div style="font-size: 2.5rem; margin-bottom: 0.6rem;">📅</div>
+          <h3 style="font-weight:700; color: var(--text-primary); margin-bottom: 0.35rem;">No Academic Schedule Uploaded Yet</h3>
+          <p style="font-size:0.85rem; color: var(--text-muted); max-width: 460px; margin: 0 auto;">
+            Click <strong>"Upload Academic Calendar"</strong> above to import your syllabus or circular (Excel, PDF, CSV, or Image) and view milestones sorted by degree program.
+          </p>
         </div>
       `;
-
-      const emptyBtn = document.getElementById('empty-state-upload-btn');
-      if (emptyBtn) {
-        emptyBtn.addEventListener('click', () => {
-          this.resetUploadModal();
-          if (this.uploadDialog) this.uploadDialog.showModal();
-        });
-      }
       return;
     }
 
