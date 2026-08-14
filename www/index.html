@@ -337,19 +337,137 @@
               </button>
             </div>
           </div>
-
-          <!-- Reminders Grid & List View -->
-          <div class="reminders-container">
-            <div id="reminders-list" class="reminders-list">
-              <!-- Dynamic Reminder Items -->
-            </div>
-          </div>
-        </section>
-
-
         <!-- 3. TIMETABLE & PLANNER VIEW -->
         <section id="planner-view" class="view-panel">
-          <div class="planner-layout">
+          <!-- AI Academic Calendar & Timetable Intelligence Hub -->
+          <div class="ai-calendar-hub">
+            
+            <!-- Hero Header Bar -->
+            <div class="ai-hub-header card">
+              <div class="ai-hub-info">
+                <div class="ai-badge-row">
+                  <span class="ai-pill-tag">✨ AI Schedule Intelligence</span>
+                  <span id="active-calendar-badge" class="ai-calendar-badge">Jaypee University • Odd Semester 2026-27</span>
+                </div>
+                <h2 id="calendar-view-heading">Academic Calendar & Course Timetable Hub</h2>
+                <p id="calendar-view-subheading">Upload your academic calendar (Excel, PDF, Image) or timetable circular to sort events by program, track exams, and sync to study schedules.</p>
+              </div>
+
+              <!-- Hub Action Buttons -->
+              <div class="ai-hub-actions">
+                <button id="open-upload-calendar-modal-btn" class="btn btn-primary">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Upload Timetable / Calendar</span>
+                </button>
+                <button id="load-sample-calendar-btn" class="btn btn-subtle" title="Load Jaypee University 2026-27 Calendar Seed">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span>Jaypee 2026-27 Seed</span>
+                </button>
+                <button id="open-ai-key-modal-btn" class="btn btn-subtle btn-icon" title="Configure Gemini AI Vision Key" aria-label="AI Settings">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Semester Summary Metrics -->
+            <div class="calendar-metrics-row" id="calendar-summary-metrics">
+              <div class="metric-mini-card">
+                <span class="metric-icon">📅</span>
+                <div>
+                  <span class="metric-val" id="metric-total-days">152</span>
+                  <span class="metric-lbl">Total Semester Days</span>
+                </div>
+              </div>
+              <div class="metric-mini-card">
+                <span class="metric-icon">📚</span>
+                <div>
+                  <span class="metric-val" id="metric-teaching-days">94</span>
+                  <span class="metric-lbl">Teaching Days</span>
+                </div>
+              </div>
+              <div class="metric-mini-card">
+                <span class="metric-icon">🎯</span>
+                <div>
+                  <span class="metric-val" id="metric-exam-days">18</span>
+                  <span class="metric-lbl">Days on Exams</span>
+                </div>
+              </div>
+              <div class="metric-mini-card">
+                <span class="metric-icon">🏖️</span>
+                <div>
+                  <span class="metric-val" id="metric-holiday-days">33</span>
+                  <span class="metric-lbl">Holidays & Vacations</span>
+                </div>
+              </div>
+              <div class="metric-mini-card">
+                <span class="metric-icon">🏢</span>
+                <div>
+                  <span class="metric-val" id="metric-non-teaching">9</span>
+                  <span class="metric-lbl">Non-Teaching Days</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Program Selector & Course Filter Ribbon -->
+            <div class="card calendar-controls-card">
+              <div class="program-filter-header">
+                <span class="filter-label">Filter by Degree Program:</span>
+                <div class="program-pills" id="program-filter-pills">
+                  <!-- Generated dynamically from active calendar -->
+                  <button class="filter-pill active" data-program="All Programs">🌟 All Programs</button>
+                  <button class="filter-pill" data-program="B-Tech (4 Years)">💻 B-Tech (4 Years)</button>
+                  <button class="filter-pill" data-program="BCA / MCA / MBA">🖥️ BCA / MCA / MBA</button>
+                  <button class="filter-pill" data-program="B.A / B.Com / B.Sc / BBA">📊 B.A / B.Com / B.Sc / BBA</button>
+                  <button class="filter-pill" data-program="1st Year (All)">🎓 1st Year (Freshers)</button>
+                </div>
+              </div>
+
+              <!-- Sub-Filters: Search, Categories & Bulk Actions -->
+              <div class="filter-action-toolbar">
+                <div class="search-input-box calendar-search">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" id="calendar-event-search" placeholder="Search exams, courses, viva, holidays...">
+                </div>
+
+                <div class="category-filter-group" id="category-filter-chips">
+                  <button class="cat-chip active" data-category="all">All</button>
+                  <button class="cat-chip" data-category="exam">🎯 Exams</button>
+                  <button class="cat-chip" data-category="registration">📝 Registrations</button>
+                  <button class="cat-chip" data-category="lab">🔬 Labs / Viva</button>
+                  <button class="cat-chip" data-category="holiday">🎉 Holidays</button>
+                  <button class="cat-chip" data-category="vacation">🏖️ Vacations</button>
+                  <button class="cat-chip" data-category="class">📚 Classes</button>
+                </div>
+
+                <div class="bulk-sync-actions">
+                  <button id="bulk-sync-exams-btn" class="btn btn-subtle btn-sm" title="Sync filtered exams to Countdown tracker">
+                    <span>⚡ Sync Exams</span>
+                  </button>
+                  <button id="bulk-sync-reminders-btn" class="btn btn-subtle btn-sm" title="Sync deadlines to reminders & notifications">
+                    <span>🔔 Sync Reminders</span>
+                  </button>
+                  <button id="export-ics-btn" class="btn btn-subtle btn-sm" title="Export to Apple / Google Calendar (.ics)">
+                    <span>📅 Export .ics</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Extracted Sorted Events Cards Feed -->
+            <div class="calendar-events-container">
+              <div class="events-feed-header">
+                <h4 id="events-count-heading">Upcoming Academic Milestones (30 Events)</h4>
+                <span class="events-filter-badge" id="current-filter-badge">Showing: All Programs</span>
+              </div>
+              <div id="calendar-events-feed" class="calendar-events-feed">
+                <!-- Dynamically populated event cards -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Section Divider: Weekly Study Timetable & Deadlines -->
+          <div class="planner-layout" style="margin-top: 2rem;">
             
             <!-- Left: Weekly Timetable Grid -->
             <div class="card timetable-card">
@@ -404,14 +522,13 @@
           </div>
         </section>
 
-
-        <!-- 4. FLASHCARD DECKS VIEW -->
+        <!-- 4. FLASHCARDS & ACTIVE RECALL VIEW -->
         <section id="flashcards-view" class="view-panel">
-          <div id="flashcards-hub-view">
-            <div class="section-top-bar">
-              <div>
+          <div class="flashcards-layout">
+            <div class="view-header">
+              <div class="view-title-group">
                 <h2>Active Recall Decks</h2>
-                <p class="section-caption">Master your definitions, formulas, and concepts with 3D flashcards.</p>
+                <p>Spaced repetition flashcards with confidence-based review schedules.</p>
               </div>
               <button id="create-deck-btn" class="btn btn-primary">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -1223,8 +1340,121 @@
   </dialog>
 
 
+  <!-- 8. AI ACADEMIC CALENDAR & TIMETABLE UPLOAD MODAL -->
+  <dialog id="ai-calendar-upload-dialog" class="custom-dialog">
+    <div class="dialog-header">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size: 1.2rem;">✨</span>
+        <h3>AI Academic Calendar & Timetable Import</h3>
+      </div>
+      <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
+    </div>
+
+    <div class="dialog-body">
+      <!-- Upload Mode Switcher Tabs -->
+      <div class="upload-tabs-nav">
+        <button type="button" id="tab-btn-file" class="upload-tab-btn active">📁 Upload File (Excel, PDF, Image, CSV)</button>
+        <button type="button" id="tab-btn-text" class="upload-tab-btn">📝 Paste Circular / Text</button>
+      </div>
+
+      <!-- Tab 1: File Dropzone (Excel, PDF, Image, CSV) -->
+      <div id="tab-content-file" class="upload-tab-panel">
+        <div class="file-dropzone" id="ai-file-dropzone">
+          <input type="file" id="ai-calendar-file-input" accept=".xlsx,.xls,.csv,.tsv,.pdf,image/*,text/*,.txt" class="file-input-hidden">
+          <div class="dropzone-inner">
+            <div class="dropzone-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="dropzone-prompt">
+              <strong>Drag & drop your schedule file here</strong> or <span class="dropzone-browse-link">browse</span>
+            </div>
+            <p class="dropzone-formats">Supports Excel (.xlsx, .xls), CSV, PDF documents, Images (PNG, JPG, WebP), and text circulars</p>
+          </div>
+          <div id="selected-file-display" class="selected-file-info hidden">
+            <span class="file-icon">📄</span>
+            <span id="selected-file-name" class="file-name">filename.xlsx</span>
+            <button type="button" id="clear-selected-file-btn" class="file-clear-btn">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Paste Text / Circular -->
+      <div id="tab-content-text" class="upload-tab-panel hidden">
+        <div class="form-group">
+          <label for="ai-calendar-text-input">Paste University Circular, Timetable or Exam Notice:</label>
+          <textarea id="ai-calendar-text-input" rows="8" placeholder="e.g. 
+ACADEMIC CALENDAR: ODD SEMESTER 2026-27
+14-15 July 2026: Registration - 1st Year
+18 July 2026: Registration - B.Tech (2nd/3rd/4th Year)
+31 Aug - 04 Sep 2026: T1 Examinations (4 Years B.Tech)
+14 Sep - 19 Sep 2026: Mid Term Examinations (BCA, MCA, MBA)
+30 Nov - 07 Dec 2026: End Semester Examinations (All Programs)"></textarea>
+        </div>
+      </div>
+
+      <!-- Step-by-Step AI Processing Indicator -->
+      <div id="ai-upload-progress" class="ai-progress-card hidden">
+        <div class="ai-spinner-row">
+          <div class="ai-pulse-spinner"></div>
+          <span id="ai-progress-text" class="ai-progress-label">Analyzing file layout and OCR structure...</span>
+        </div>
+        <div class="ai-steps-checklist">
+          <div class="ai-step-row" id="step-1"><span class="step-dot">●</span> <span>Format & Table Detection</span></div>
+          <div class="ai-step-row" id="step-2"><span class="step-dot">●</span> <span>Spreadsheet / Neural OCR Extraction</span></div>
+          <div class="ai-step-row" id="step-3"><span class="step-dot">●</span> <span>Program & Exam Categorization</span></div>
+          <div class="ai-step-row" id="step-4"><span class="step-dot">●</span> <span>Structuring Schedule & Timetable</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
+      <button type="button" id="submit-ai-calendar-btn" class="btn btn-primary">
+        <span>Process & Sort with AI</span>
+      </button>
+    </div>
+  </dialog>
+
+
+  <!-- 9. GEMINI AI VISION KEY CONFIG MODAL -->
+  <dialog id="ai-key-dialog" class="custom-dialog">
+    <div class="dialog-header">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size: 1.2rem;">🔑</span>
+        <h3>AI Engine & Gemini Vision Setup</h3>
+      </div>
+      <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
+    </div>
+
+    <div class="dialog-body">
+      <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+        StudyPulse includes a built-in neural table parser that works completely offline for Excel, CSV, text, and university calendars.
+      </p>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+        If you want advanced OCR vision extraction on scanned images and handwritten timetable circulars, you can optionally provide a free <strong>Google Gemini API Key</strong>. Your key is stored securely only on your device.
+      </p>
+      <div class="form-group">
+        <label for="gemini-api-key-input">Google Gemini API Key (Optional)</label>
+        <input type="password" id="gemini-api-key-input" placeholder="AIzaSy...">
+      </div>
+      <div style="font-size: 0.76rem; color: var(--text-muted);">
+        Don't have a key? Leave blank to use StudyPulse's built-in intelligent rule engine.
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button type="button" id="clear-ai-key-btn" class="btn btn-subtle text-danger">Clear Key</button>
+      <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
+      <button type="button" id="save-ai-key-btn" class="btn btn-primary">Save Key</button>
+    </div>
+  </dialog>
+
+
   <!-- IN-APP TOAST ALERTS CONTAINER -->
   <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- SheetJS CDN for Client-Side Excel (.xlsx, .xls) Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Scripts -->
   <script type="module" src="js/app.js"></script>

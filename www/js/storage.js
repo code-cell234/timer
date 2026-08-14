@@ -187,7 +187,9 @@ const DEFAULT_STATE = {
     { date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0], minutes: 50, subject: 'Science' },
     { date: new Date(Date.now() - 86400000 * 1).toISOString().split('T')[0], minutes: 100, subject: 'Coding' },
     { date: new Date().toISOString().split('T')[0], minutes: 50, subject: 'General' }
-  ]
+  ],
+  academicCalendars: [],
+  activeCalendarId: null
 };
 
 class StorageService {
@@ -240,6 +242,42 @@ class StorageService {
         console.error('Subscriber error in StorageService:', err);
       }
     });
+  }
+
+  // Academic Calendar Management
+  saveAcademicCalendar(calendar) {
+    if (!this.state.academicCalendars) this.state.academicCalendars = [];
+    const idx = this.state.academicCalendars.findIndex((c) => c.id === calendar.id);
+    if (idx !== -1) {
+      this.state.academicCalendars[idx] = calendar;
+    } else {
+      this.state.academicCalendars.unshift(calendar);
+    }
+    this.state.activeCalendarId = calendar.id;
+    this.save();
+    return calendar;
+  }
+
+  getActiveCalendar() {
+    if (!this.state.academicCalendars || this.state.academicCalendars.length === 0) {
+      return null;
+    }
+    const found = this.state.academicCalendars.find((c) => c.id === this.state.activeCalendarId);
+    return found || this.state.academicCalendars[0];
+  }
+
+  setActiveCalendar(calendarId) {
+    this.state.activeCalendarId = calendarId;
+    this.save();
+  }
+
+  deleteAcademicCalendar(calendarId) {
+    if (!this.state.academicCalendars) return;
+    this.state.academicCalendars = this.state.academicCalendars.filter((c) => c.id !== calendarId);
+    if (this.state.activeCalendarId === calendarId) {
+      this.state.activeCalendarId = this.state.academicCalendars.length ? this.state.academicCalendars[0].id : null;
+    }
+    this.save();
   }
 
   // Daily streak check & midnight habit uncheck
