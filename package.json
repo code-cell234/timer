@@ -1,6 +1,6 @@
 {
   "name": "studypulse",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "StudyPulse - Focus, Reminders, Flashcards & Study Planner",
   "scripts": {
     "prepare-assets": "node prepare-build.js",

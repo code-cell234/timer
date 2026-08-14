@@ -1,6 +1,6 @@
 # 📚 StudyPulse
 
-> A premium focus & study companion — Pomodoro timers, smart reminders, flashcards, habit tracking, and analytics. Built with Capacitor for native Android delivery.
+> A premium focus & study companion — Pomodoro timers, AI academic calendar intelligence, smart reminders, active recall flashcards, habit tracking, and analytics. Built with Capacitor for native Android delivery.
 
 ---
 
@@ -8,14 +8,49 @@
 
 | Module | What it does |
 |---|---|
-| 🍅 **Pomodoro / Focus Timer** | Customisable focus intervals (Pomodoro, Short/Long Break, Deep Work, Custom), cycle counter, Zen fullscreen mode, scratchpad notes |
-| 🔔 **Smart Reminders** | Schedule tasks with date/time, subject, priority, recurrence (daily/weekdays/weekly), snooze, and native push alarms |
-| 📅 **Study Planner** | Drag-drop schedule builder with subject colour-coding |
-| 🃏 **Flashcards** | Spaced-repetition flashcard decks with flip animations |
-| 🏆 **Habits & Gamification** | Daily habits, XP system, achievement badges |
-| 📊 **Analytics** | Study-time charts, daily goal tracker, session history |
-| 🎵 **Ambient Audio** | Lo-fi rain, café, deep focus, white noise |
-| 🌙 **Themes & Fonts** | Dark / Light / Sepia theme, multiple font pairings |
+| 🤖 **AI Academic Calendar & Timetable** *(NEW in v1.2)* | Upload academic schedules in **Excel (.xlsx, .xls)**, **CSV**, **PDF**, **Images (OCR)**, or **Text Circulars**. Automatically sorts events by degree programs (B-Tech, BCA/MCA/MBA, B.A/B.Com/B.Sc/BBA, 1st Year) with 1-click sync to Timetable slots, Exam countdowns, and Push Reminders. |
+| 🍅 **Pomodoro / Focus Timer** | Customisable focus intervals (Pomodoro, Short/Long Break, Deep Work, Custom), cycle counter, Zen fullscreen mode, scratchpad notes. |
+| 🔔 **Smart Reminders** | Schedule tasks with date/time, subject, priority, recurrence (daily/weekdays/weekly), snooze, and native push alarms. |
+| 📅 **Weekly Timetable & Planner** | Interactive weekly schedule grid with subject colour-coding and live slot management. |
+| 🎯 **Exam Countdown & Milestones** | Track exam targets, target scores (e.g. Grade A+ / 95%+), and live relative day countdowns. |
+| 🧠 **Spaced Repetition Reviews** | Scientific retention schedules tracking topics across 1d, 3d, 7d, and 30d milestones. |
+| 🃏 **Flashcards (Active Recall)** | 3D flip study arena with self-assessment confidence ratings (`Again`, `Hard`, `Good`, `Easy`). |
+| 🏆 **Habits & Gamification** | Daily habits checklist, dynamic XP leveling system, and achievement badges. |
+| 📊 **Analytics & Heatmap** | Study-time charts, daily goal tracker, LeetCode-style study contribution heatmap. |
+| 🎵 **Ambient Audio** | Procedural Web Audio soundscapes: rain shower, white/pink/brown noise, 40Hz binaural beats, coffee shop buzz. |
+| 🌙 **Themes & Typography** | Dark, Light, Forest themes + Lexend, JetBrains Mono, DM Sans, and Plus Jakarta Sans font pairings. |
+
+---
+
+## 🤖 AI Academic Calendar & Timetable Intelligence (v1.2.0)
+
+StudyPulse includes an offline-first **AI Schedule Intelligence Engine** designed specifically for university and college students:
+
+### 1. Multi-Format Upload & Ingestion
+- 📊 **Excel Spreadsheets (`.xlsx`, `.xls`)**: Client-side parsing powered by SheetJS extracts lecture tables, multi-day columns, and exam date matrices.
+- 📑 **CSV / TSV Files (`.csv`, `.tsv`)**: Fast table row and column parsing.
+- 🖼️ **PDFs & Images (`.pdf`, `.png`, `.jpg`, `.webp`)**: Multi-modal layout detection and neural table OCR (with optional Google Gemini Vision API key support).
+- 📝 **Paste University Circulars**: Natural language parser extracts dates, days, start/end times, and program batches.
+- 🎓 **Jaypee University 2026-27 Seed**: Pre-loaded with all 30 milestones, exams (T1, T2, Mid-Term, End-Sem, Make-up), lab-viva tests, registration windows, and holiday breaks.
+
+### 2. Intelligent Program & Course Filtering
+- Filter milestones instantly by degree program:
+  - `🌟 All Programs`
+  - `💻 B-Tech (4 Years)`
+  - `🖥️ BCA / MCA / MBA`
+  - `📊 B.A / B.Com / B.Sc / BBA`
+  - `🎓 1st Year (Freshers)`
+- Category filter chips: `Exams`, `Registrations`, `Labs / Viva`, `Holidays`, `Vacations`, `Classes`.
+- Live keyword search across subjects, HoD caution notices, and answer sheet display dates.
+
+### 3. 1-Click Sync Engine
+- **`+ Add Exam Target`**: 1-click sends any exam milestone to the **Exam & Milestone Deadlines** card with live countdown badges.
+- **`+ Sync to Reminder`**: 1-click schedules notification reminders for attendance reviews, fee clearance, and result declarations.
+- **`⚡ Sync Exams` / `🔔 Sync Reminders`**: Bulk-sync all filtered milestones at once.
+- **`📅 Export .ics`**: Export customized schedules to Google Calendar, Apple Calendar, or Outlook.
+
+### 4. Semester Analytics
+- Instant metrics bar: Total Semester Days (152), Teaching Days (94), Exam Days (18), Holidays & Vacations (33), Non-Teaching Days (9).
 
 ---
 
@@ -27,14 +62,6 @@ StudyPulse uses **Capacitor `@capacitor/local-notifications`** to deliver exact-
 - 📺 Another app is **open in the foreground** (YouTube, Chrome, WhatsApp, etc.)  
 - 💤 The device is in **deep sleep**
 
-### How it works
-
-| Notification type | How it's scheduled |
-|---|---|
-| Focus / Break session complete | A native `allowWhileIdle` alarm is set the instant you press **Start**. If you pause/reset, the alarm is cancelled. When the timer runs down (even while locked), Android fires the alarm at the exact millisecond. |
-| Smart Reminders & Due-date alerts | Each reminder is registered as an exact-time `LocalNotification` alarm at the moment you create or edit it, using `allowWhileIdle: true` to pierce Doze mode. |
-| Instant in-app alerts | Fires via Native → Service Worker → `window.Notification` fallback chain. |
-
 ### Notification Channels (Android 8.0+)
 
 | Channel | Priority | Visibility |
@@ -44,27 +71,19 @@ StudyPulse uses **Capacitor `@capacitor/local-notifications`** to deliver exact-
 
 ---
 
-## 🧪 Testing Lock Screen Notifications
-
-1. Open the app → go to **Settings → Notifications & Sound Alerts**
-2. Tap **🔔 Test Lock Screen Alert (5s)**
-3. Immediately press the power button to lock your phone
-4. In ~5 seconds, a loud chime + vibration + heads-up banner pops up on the lock screen ✅
-
----
-
 ## 🛠 Tech Stack
 
-- **Frontend**: Vanilla HTML + CSS + ES Modules JavaScript
-- **Native wrapper**: [Capacitor](https://capacitorjs.com/) v8 (Android)
+- **Frontend**: Vanilla HTML5 + CSS3 + ES Modules JavaScript
+- **Spreadsheet Parsing**: [SheetJS (xlsx)](https://sheetjs.com/) v0.18.5
+- **Native Wrapper**: [Capacitor](https://capacitorjs.com/) v8 (Android)
 - **Notifications**: `@capacitor/local-notifications` v8.2.1
-- **Audio**: Web Audio API (procedural synthesis — no audio files needed)
-- **Storage**: `localStorage` (100% offline, no backend)
+- **Audio**: Web Audio API (procedural synthesis — zero external audio files)
+- **Storage**: `localStorage` (100% offline persistence)
 - **PWA**: Service Worker with cache-first strategy + offline support
 
 ---
 
-## 🚀 Development Setup
+## 🚀 Development & Build Setup
 
 ```bash
 # Install dependencies
@@ -73,14 +92,14 @@ npm install
 # Prepare web assets (copies to www/)
 npm run prepare-assets
 
-# Sync Capacitor native project
+# Sync Capacitor native Android project
 npx cap sync android
 
-# Build a debug APK
+# Build a release/debug APK
 npm run build:apk
 ```
 
-The compiled APK is output as `StudyPulse.apk` in the project root.
+The compiled Android application package is output as [`StudyPulse.apk`](https://github.com/code-cell234/timer/raw/main/StudyPulse.apk) in the project root.
 
 ---
 
@@ -88,76 +107,62 @@ The compiled APK is output as `StudyPulse.apk` in the project root.
 
 ```
 pr1/
-├── index.html              # Main app shell (all views & modals)
+├── index.html              # Main app shell (all views, AI calendar hub & modals)
 ├── sw.js                   # Service Worker (cache-first, notification click handler)
 ├── manifest.json           # PWA manifest
 ├── capacitor.config.json   # Capacitor config (LocalNotifications plugin settings)
+├── StudyPulse.apk          # Pre-built installable Android APK
 ├── js/
 │   ├── app.js              # Master orchestrator (init, routing, settings)
+│   ├── ai-calendar-parser.js # 🤖 AI multi-format parser (Excel, CSV, PDF, OCR, 1-click sync)
 │   ├── notifications.js    # 🔔 Unified native + web notification engine
 │   ├── timer.js            # Pomodoro/Focus timer (native alarm integration)
 │   ├── reminders.js        # Smart reminders module
-│   ├── planner.js          # Study planner
-│   ├── flashcards.js       # Flashcard engine
-│   ├── habits.js           # Habit tracker & XP system
-│   ├── analytics.js        # Charts & session history
-│   ├── audio.js            # Web Audio API service
-│   ├── storage.js          # localStorage wrapper
+│   ├── planner.js          # Timetable, exam countdown & AI calendar controller
+│   ├── flashcards.js       # Flashcard active recall engine
+│   ├── habits.js           # Habit tracker & XP leveling system
+│   ├── analytics.js        # Charts, session history & heatmap
+│   ├── audio.js            # Web Audio API soundscape synthesis
+│   ├── storage.js          # localStorage state persistence & calendar management
 │   └── tilt3d.js           # Gyroscope 3D tilt effects
 ├── styles/
 │   ├── main.css            # Design tokens & base styles
 │   ├── components.css      # Reusable UI components
-│   ├── views.css           # Per-view layouts
+│   ├── views.css           # Per-view layouts & AI Calendar hub styling
 │   └── effects3d.css       # 3D tilt, glassmorphism, animations
 ├── icons/                  # App icons (192px, 512px)
-├── android/                # Capacitor-generated Android project
-└── www/                    # Built web assets (auto-generated by prepare-build.js)
+├── android/                # Capacitor-generated Android native project
+└── www/                    # Built web distribution assets (auto-generated)
 ```
-
----
-
-## 🔒 Android Permissions
-
-| Permission | Purpose |
-|---|---|
-| `POST_NOTIFICATIONS` | Show notification banners & lock-screen alerts |
-| `SCHEDULE_EXACT_ALARM` | Fire alarms at precise timestamps (Android 12+) |
-| `USE_EXACT_ALARM` | Alternative exact-alarm permission (Android 13+) |
-| `RECEIVE_BOOT_COMPLETED` | Re-register alarms after device reboot |
-| `WAKE_LOCK` | Keep CPU running long enough to deliver alarm |
-| `VIBRATE` | Vibrate on notification arrival |
 
 ---
 
 ## 📝 Changelog
 
+### v1.2.0 — AI Academic Calendar & Timetable Intelligence (2026-08-14)
+- **[NEW]** **AI Academic Calendar & Course Hub** in the Timetable & Planner section.
+- **[NEW]** **Excel (.xlsx, .xls) & CSV ingestion** via client-side SheetJS integration.
+- **[NEW]** **Multi-modal OCR & Document parsing** supporting PDF files, Images (PNG, JPG, WebP), and Pasted Circular text.
+- **[NEW]** **Program Sorting System**: Filter milestones by `B-Tech (4 Years)`, `BCA / MCA / MBA`, `B.A / B.Com / B.Sc / BBA`, and `1st Year (Freshers)`.
+- **[NEW]** **Category Filters**: `Exams`, `Registrations`, `Labs / Viva`, `Holidays`, `Vacations`, and `Classes`.
+- **[NEW]** **1-Click Sync to Timetable**: Automatically extracts lecture slots into the weekly study timetable grid.
+- **[NEW]** **1-Click Sync to Exam Deadlines**: Send exam milestones (T1, T2, Mid Term, End Sem, Make-up) directly into the live countdown tracker.
+- **[NEW]** **1-Click Sync to Smart Reminders**: Bulk-schedule notifications for attendance reviews, caution notices, and ERP result dates.
+- **[NEW]** **iCal (.ics) Export**: Export customized program schedules directly to Apple Calendar, Google Calendar, and Microsoft Outlook.
+- **[NEW]** **Pre-Loaded Jaypee University 2026-27 Seed**: Complete Odd Semester 2026-27 academic calendar with 30 categorized milestones and semester summary metrics.
+- **[NEW]** Optional **Google Gemini Vision API Key** modal configuration.
+
 ### v1.1.0 — Background & Lock Screen Notifications (2026-08-14)
-- **[NEW]** Native Android alarm scheduled on **timer start** — session-complete notification fires even when the phone is locked or another app is open (`allowWhileIdle: true`)
-- **[NEW]** Dual high-priority notification channels: `studypulse_timers_channel` and `studypulse_reminders_channel` (both `IMPORTANCE_HIGH` + `VISIBILITY_PUBLIC`)
-- **[NEW]** Timer alarm is **automatically cancelled** on pause, reset, and skip — no ghost alarms
-- **[NEW]** `visibilitychange` handler — if you open the app after the timer elapsed while backgrounded, the session completes instantly
-- **[NEW]** Notification tap routing — tapping a notification on the lock screen opens StudyPulse to the correct view/reminder
-- **[NEW]** Visibility sync — re-syncs all reminder alarms every time you return to the app
-- **[NEW]** **🔔 Test Lock Screen Alert (5s)** button in Settings so you can verify lock-screen delivery on your device
-- **[IMPROVED]** Reminder scheduling uses `allowWhileIdle: true` with dedicated channel IDs
-- **[IMPROVED]** `capacitor.config.json` updated with `LocalNotifications` plugin defaults
+- **[NEW]** Native Android alarm scheduled on **timer start** — session-complete notification fires even when the phone is locked (`allowWhileIdle: true`).
+- **[NEW]** Dual high-priority notification channels: `studypulse_timers_channel` and `studypulse_reminders_channel`.
+- **[NEW]** Timer alarm automatically cancelled on pause, reset, and skip.
+- **[NEW]** `visibilitychange` background sync handler.
+- **[NEW]** Notification tap routing directly to the target view/reminder.
+- **[NEW]** **🔔 Test Lock Screen Alert (5s)** diagnostic button in Settings.
 
 ### v1.0.0 — Initial Release
-- Full Pomodoro & focus timer suite
-- Smart Reminders with recurrence & snooze
-- Study Planner, Flashcards, Habits, Analytics
-- Ambient audio engine
-- Gamification (XP, badges)
-- Dark / Light / Sepia themes
-- Service Worker PWA with offline support
-- Capacitor Android APK
-
----
-
-## 📄 License
-
-MIT © StudyPulse
-
----
-
-*StudyPulse — study smarter, not harder.* 🎯
+- Full Pomodoro & focus timer suite.
+- Smart Reminders with recurrence & snooze.
+- Study Planner, Flashcards, Habits, Analytics.
+- Ambient audio soundscapes.
+- Gamification (XP, badges).
