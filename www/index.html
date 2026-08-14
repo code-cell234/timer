@@ -88,7 +88,7 @@
 
         <button class="nav-item" data-view="planner-view" id="nav-planner">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span>Timetable & Planner</span>
+          <span>Academic Calendar</span>
         </button>
 
         <button class="nav-item" data-view="flashcards-view" id="nav-flashcards">
@@ -337,9 +337,16 @@
               </button>
             </div>
           </div>
-        <!-- 3. TIMETABLE & PLANNER VIEW -->
+
+          <!-- Reminders & Task List -->
+          <div id="reminders-list" class="reminders-list">
+            <!-- Rendered dynamically by reminders.js -->
+          </div>
+        </section>
+
+        <!-- 3. ACADEMIC CALENDAR & EXAM DEADLINES VIEW -->
         <section id="planner-view" class="view-panel">
-          <!-- AI Academic Calendar & Timetable Intelligence Hub -->
+          <!-- AI Academic Calendar Intelligence Hub -->
           <div class="ai-calendar-hub">
             
             <!-- Hero Header Bar -->
@@ -349,7 +356,7 @@
                   <span class="ai-pill-tag">✨ AI Schedule Intelligence</span>
                   <span id="active-calendar-badge" class="ai-calendar-badge">No Schedule Uploaded</span>
                 </div>
-                <h2 id="calendar-view-heading">Academic Calendar & Course Timetable Hub</h2>
+                <h2 id="calendar-view-heading">Academic Calendar Hub</h2>
                 <p id="calendar-view-subheading">Upload your university academic calendar (Excel, PDF, Image, CSV) or paste circular text to sort events by program, track exams, and sync schedules.</p>
               </div>
 
@@ -357,9 +364,9 @@
               <div class="ai-hub-actions">
                 <button id="open-upload-calendar-modal-btn" class="btn btn-primary">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <span>Upload Timetable / Calendar</span>
+                  <span>Upload Academic Calendar</span>
                 </button>
-                <button id="clear-calendar-btn" class="btn btn-subtle text-danger" title="Clear or Replace Current Schedule" style="display:none;">
+                <button id="clear-calendar-btn" class="btn btn-subtle text-danger" title="Clear Current Schedule" style="display:none;">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   <span>Clear Schedule</span>
                 </button>
@@ -422,7 +429,10 @@
               <div class="filter-action-toolbar">
                 <div class="search-input-box calendar-search">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <input type="text" id="calendar-event-search" placeholder="Search exams, courses, viva, holidays...">
+                  <input type="text" id="calendar-event-search" placeholder="Search exams, courses, viva, holidays..." autocomplete="off">
+                  <button id="calendar-search-clear-btn" class="search-clear-btn" title="Clear search" aria-label="Clear search" style="display:none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 </div>
 
                 <div class="category-filter-group" id="category-filter-chips">
@@ -452,8 +462,8 @@
             <!-- Extracted Sorted Events Cards Feed -->
             <div class="calendar-events-container">
               <div class="events-feed-header">
-                <h4 id="events-count-heading">Upcoming Academic Milestones (30 Events)</h4>
-                <span class="events-filter-badge" id="current-filter-badge">Showing: All Programs</span>
+                <h4 id="events-count-heading">Upcoming Academic Milestones</h4>
+                <span class="events-filter-badge" id="current-filter-badge">No Schedule Uploaded</span>
               </div>
               <div id="calendar-events-feed" class="calendar-events-feed">
                 <!-- Dynamically populated event cards -->
@@ -462,56 +472,35 @@
 
           </div>
 
-          <!-- Section Divider: Weekly Study Timetable & Deadlines -->
+          <!-- Section Divider: Exam Countdowns & Spaced Repetition -->
           <div class="planner-layout" style="margin-top: 2rem;">
             
-            <!-- Left: Weekly Timetable Grid -->
-            <div class="card timetable-card">
+            <!-- Left Column: Exam Countdown Section -->
+            <div class="card exam-countdown-card">
               <div class="card-header">
                 <div class="card-title-group">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  <h3>Weekly Study Timetable</h3>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <h3>Exam & Milestone Deadlines</h3>
                 </div>
-                <button id="add-timetable-slot-btn" class="btn btn-subtle btn-sm">+ Add Study Slot</button>
+                <button id="add-exam-btn" class="text-btn-xs">+ Add Target</button>
               </div>
-
-              <!-- Timetable Grid -->
-              <div class="timetable-wrapper">
-                <div class="timetable-grid" id="timetable-grid">
-                  <!-- Generated by planner.js -->
-                </div>
+              <div id="exam-countdown-list" class="exam-list">
+                <!-- Dynamic Exam Cards -->
               </div>
             </div>
 
-            <!-- Right: Exam Countdowns & Spaced Repetition -->
-            <div class="planner-side-column">
-              <!-- Exam Countdown Section -->
-              <div class="card exam-countdown-card">
-                <div class="card-header">
-                  <div class="card-title-group">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    <h3>Exam & Milestone Deadlines</h3>
-                  </div>
-                  <button id="add-exam-btn" class="text-btn-xs">+ Add Target</button>
+            <!-- Right Column: Spaced Repetition / Review Planner -->
+            <div class="card spaced-rep-card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  <h3>Spaced Repetition Reviews</h3>
                 </div>
-                <div id="exam-countdown-list" class="exam-list">
-                  <!-- Dynamic Exam Cards -->
-                </div>
+                <button id="add-spaced-topic-btn" class="text-btn-xs">+ Track Topic</button>
               </div>
-
-              <!-- Spaced Repetition / Review Planner -->
-              <div class="card spaced-rep-card">
-                <div class="card-header">
-                  <div class="card-title-group">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                    <h3>Spaced Repetition Reviews</h3>
-                  </div>
-                  <button id="add-spaced-topic-btn" class="text-btn-xs">+ Track Topic</button>
-                </div>
-                <p class="section-caption">Reviewing at 1d, 3d, 7d, and 30d intervals for 100% memory retention.</p>
-                <div id="spaced-topics-list" class="spaced-topics-list">
-                  <!-- Dynamic Topics -->
-                </div>
+              <p class="section-caption">Reviewing at 1d, 3d, 7d, and 30d intervals for 100% memory retention.</p>
+              <div id="spaced-topics-list" class="spaced-topics-list">
+                <!-- Dynamic Topics -->
               </div>
             </div>
 
@@ -520,7 +509,7 @@
 
         <!-- 4. FLASHCARDS & ACTIVE RECALL VIEW -->
         <section id="flashcards-view" class="view-panel">
-          <div class="flashcards-layout">
+          <div class="flashcards-layout" id="flashcards-hub-view">
             <div class="view-header">
               <div class="view-title-group">
                 <h2>Active Recall Decks</h2>
@@ -1190,57 +1179,7 @@
   </dialog>
 
 
-  <!-- 4. ADD TIMETABLE STUDY SLOT MODAL -->
-  <dialog id="timetable-dialog" class="custom-dialog">
-    <form id="timetable-form" method="dialog">
-      <div class="dialog-header">
-        <h3>Add Timetable Study Block</h3>
-        <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
-      </div>
-      <div class="dialog-body">
-        <div class="form-group">
-          <label for="slot-day-select">Day of the Week</label>
-          <select id="slot-day-select">
-            <option value="Monday">Monday</option>
-            <option value="Tuesday">Tuesday</option>
-            <option value="Wednesday">Wednesday</option>
-            <option value="Thursday">Thursday</option>
-            <option value="Friday">Friday</option>
-            <option value="Saturday">Saturday</option>
-            <option value="Sunday">Sunday</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="slot-subject-input">Subject / Course Title *</label>
-          <input type="text" id="slot-subject-input" required placeholder="e.g. Linear Algebra, Neuroscience">
-        </div>
-        <div class="form-row-2">
-          <div class="form-group">
-            <label for="slot-start-time">Start Time</label>
-            <input type="time" id="slot-start-time" required value="09:00">
-          </div>
-          <div class="form-group">
-            <label for="slot-end-time">End Time</label>
-            <input type="time" id="slot-end-time" required value="10:30">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="slot-color-select">Color Accent</label>
-          <select id="slot-color-select">
-            <option value="blue">Blue</option>
-            <option value="emerald">Emerald Green</option>
-            <option value="amber">Amber Gold</option>
-            <option value="purple">Purple</option>
-            <option value="rose">Rose Red</option>
-          </select>
-        </div>
-      </div>
-      <div class="dialog-footer">
-        <button type="button" class="btn btn-subtle" data-close-dialog>Cancel</button>
-        <button type="submit" class="btn btn-primary">Add Block</button>
-      </div>
-    </form>
-  </dialog>
+
 
 
   <!-- 5. ADD EXAM / TARGET MODAL -->
@@ -1336,12 +1275,12 @@
   </dialog>
 
 
-  <!-- 8. AI ACADEMIC CALENDAR & TIMETABLE UPLOAD MODAL -->
+  <!-- 8. AI ACADEMIC CALENDAR UPLOAD MODAL -->
   <dialog id="ai-calendar-upload-dialog" class="custom-dialog">
     <div class="dialog-header">
       <div style="display:flex; align-items:center; gap:0.5rem;">
         <span style="font-size: 1.2rem;">✨</span>
-        <h3>AI Academic Calendar & Timetable Import</h3>
+        <h3>AI Academic Calendar Import</h3>
       </div>
       <button type="button" class="dialog-close-btn" data-close-dialog aria-label="Close dialog">✕</button>
     </div>
@@ -1350,7 +1289,7 @@
       <!-- Upload Mode Switcher Tabs -->
       <div class="upload-tabs-nav">
         <button type="button" id="tab-btn-file" class="upload-tab-btn active">📁 Upload File (Excel, PDF, Image, CSV)</button>
-        <button type="button" id="tab-btn-text" class="upload-tab-btn">📝 Paste Circular / Text</button>
+        <button type="button" id="tab-btn-text" class="upload-tab-btn">📝 Paste Calendar Text / Circular</button>
       </div>
 
       <!-- Tab 1: File Dropzone (Excel, PDF, Image, CSV) -->
@@ -1362,7 +1301,7 @@
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
             <div class="dropzone-prompt">
-              <strong>Drag & drop your schedule file here</strong> or <span class="dropzone-browse-link">browse</span>
+              <strong>Drag & drop your Academic Calendar file here</strong> or <span class="dropzone-browse-link">browse</span>
             </div>
             <p class="dropzone-formats">Supports Excel (.xlsx, .xls), CSV, PDF documents, Images (PNG, JPG, WebP), and text circulars</p>
           </div>
@@ -1377,7 +1316,7 @@
       <!-- Tab 2: Paste Text / Circular -->
       <div id="tab-content-text" class="upload-tab-panel hidden">
         <div class="form-group">
-          <label for="ai-calendar-text-input">Paste University Circular, Timetable or Exam Notice:</label>
+          <label for="ai-calendar-text-input">Paste University Circular or Academic Calendar Notice:</label>
           <textarea id="ai-calendar-text-input" rows="8" placeholder="e.g. 
 ACADEMIC CALENDAR: ODD SEMESTER 2026-27
 14-15 July 2026: Registration - 1st Year
@@ -1398,7 +1337,7 @@ ACADEMIC CALENDAR: ODD SEMESTER 2026-27
           <div class="ai-step-row" id="step-1"><span class="step-dot">●</span> <span>Format & Table Detection</span></div>
           <div class="ai-step-row" id="step-2"><span class="step-dot">●</span> <span>Spreadsheet / Neural OCR Extraction</span></div>
           <div class="ai-step-row" id="step-3"><span class="step-dot">●</span> <span>Program & Exam Categorization</span></div>
-          <div class="ai-step-row" id="step-4"><span class="step-dot">●</span> <span>Structuring Schedule & Timetable</span></div>
+          <div class="ai-step-row" id="step-4"><span class="step-dot">●</span> <span>Structuring Course Sections & Milestones</span></div>
         </div>
       </div>
     </div>

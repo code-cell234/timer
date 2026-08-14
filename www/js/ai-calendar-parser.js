@@ -40,7 +40,7 @@ export class AICalendarParser {
     }
 
     if (!file) {
-      throw new Error('Please select a file or paste timetable / calendar text.');
+      throw new Error('Please select a file or paste academic calendar text.');
     }
 
     const fileName = file.name ? file.name.toLowerCase() : '';
@@ -441,14 +441,52 @@ Ensure valid JSON only with NO markdown fences or backticks.
   }
 
   /**
-   * Helper to extract an event object from a line of text or table row
+   * Helper to extract a clean structured event/course object from a line of text or table row
    */
   extractEventFromLine(line, idx) {
-    const lower = line.toLowerCase();
+    if (!line || line.trim().length < 3) return null;
+    let cleanLine = line.trim();
+
+    // 1. Extract Course Code if present (e.g. 25B17CI374, 25B11MT416, CS101, ECE302, etc.)
+    let courseCode = '';
+    const codeMatch = cleanLine.match(/\b([0-9]{2}[A-Z][0-9]{2}[A-Z]{2,4}[0-9]{2,4}|[A-Z]{2,4}[- ]?[0-9]{3,4}[A-Z]?)\b/i);
+    if (codeMatch) {
+      courseCode = codeMatch[1].toUpperCase();
+    }
+
+    // 2. Extract Faculty / Instructor name if present (e.g. Mr. Rishabh Gaur, Dr. John Doe, Prof. Smith)
+    let faculty = '';
+    const facultyMatch = cleanLine.match(/(?:Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s+[A-Za-z]+(?:\s+[A-Za-z]+)+/i);
+    if (facultyMatch) {
+      faculty = facultyMatch[0];
+    }
+
+    // 3. Extract Credits / L-T-P pattern (e.g. 3 0 0, 0 0 2, 3 1 0, 3-0-0)
+    let credits = '';
+    const creditsMatch = cleanLine.match(/\b(\d)\s*[-– ]\s*(\d)\s*[-– ]\s*(\d)\b/);
+    if (creditsMatch) {
+      credits = `${creditsMatch[1]}-${creditsMatch[2]}-${creditsMatch[3]}`;
+    }
+
+    // 4. Clean title: strip leading serial number, course code, credits, and faculty
+    let cleanTitle = cleanLine;
+    // Strip leading index (e.g. "7 ", "8 | ")
+    cleanTitle = cleanTitle.replace(/^\s*\d+\s*[|.\-)]\s*/, '').replace(/^\s*\d+\s+/, '');
+    if (courseCode) cleanTitle = cleanTitle.replace(new RegExp(`\\b${courseCode}\\b`, 'i'), '');
+    if (facultyMatch) cleanTitle = cleanTitle.replace(facultyMatch[0], '');
+    if (creditsMatch) cleanTitle = cleanTitle.replace(creditsMatch[0], '');
+    // Clean delimiters and extra spaces
+    cleanTitle = cleanTitle.replace(/[|:;]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    if (!cleanTitle || cleanTitle.length < 2) {
+      cleanTitle = courseCode ? `Course ${courseCode}` : cleanLine.slice(0, 60);
+    }
+
+    const lower = (cleanLine + ' ' + cleanTitle).toLowerCase();
     
-    // Determine category
+    // 5. Determine category
     let category = 'general';
-    if (lower.includes('exam') || lower.includes('test') || lower.includes('mid term') || lower.includes('end sem') || lower.includes('final') || lower.includes('t1') || lower.includes('t2')) {
+    if (lower.includes('exam') || lower.includes('test') || lower.includes('mid term') || lower.includes('end sem') || lower.includes('final') || lower.includes('t1') || lower.includes('t2') || lower.includes('t3')) {
       category = 'exam';
     } else if (lower.includes('holiday') || lower.includes('day off') || lower.includes('jayanti') || lower.includes('diwali') || lower.includes('christmas') || lower.includes('eid')) {
       category = 'holiday';
@@ -456,23 +494,32 @@ Ensure valid JSON only with NO markdown fences or backticks.
       category = 'vacation';
     } else if (lower.includes('registration') || lower.includes('add & drop') || lower.includes('enrollment') || lower.includes('admission')) {
       category = 'registration';
-    } else if (lower.includes('class') || lower.includes('orientation') || lower.includes('commencement') || lower.includes('lecture')) {
-      category = 'class';
-    } else if (lower.includes('lab') || lower.includes('viva') || lower.includes('practical') || lower.includes('project') || lower.includes('dissertation')) {
+    } else if (lower.includes('lab') || lower.includes('viva') || lower.includes('practical') || (creditsMatch && creditsMatch[3] === '2')) {
       category = 'lab';
+    } else if (courseCode || faculty || credits || lower.includes('marketing') || lower.includes('development') || lower.includes('systems') || lower.includes('class') || lower.includes('lecture') || lower.includes('theory')) {
+      category = 'class';
     } else if (lower.includes('result') || lower.includes('declaration') || lower.includes('grades')) {
       category = 'result';
+    } else if (lower.includes('project') || lower.includes('dissertation') || lower.includes('seminar')) {
+      category = 'project';
     }
 
-    // Determine program
+    // 6. Determine degree program
     let program = 'All Programs';
-    if (lower.includes('b.tech') || lower.includes('b-tech') || lower.includes('btech') || lower.includes('engineering')) {
+    const codeUpper = courseCode.toUpperCase();
+    if (
+      lower.includes('b.tech') || lower.includes('b-tech') || lower.includes('btech') || lower.includes('engineering') ||
+      codeUpper.includes('CI') || codeUpper.includes('CS') || codeUpper.includes('IT') || codeUpper.includes('EC') || codeUpper.includes('EE') || codeUpper.includes('ME')
+    ) {
       program = 'B-Tech (4 Years)';
-    } else if (lower.includes('bca') || lower.includes('mca') || lower.includes('mba')) {
+    } else if (lower.includes('bca') || lower.includes('mca') || lower.includes('mba') || codeUpper.includes('CA') || codeUpper.includes('MBA')) {
       program = 'BCA / MCA / MBA';
-    } else if (lower.includes('b.sc') || lower.includes('b.com') || lower.includes('b.a') || lower.includes('bba') || lower.includes('bsc') || lower.includes('bcom') || lower.includes('ba')) {
+    } else if (
+      lower.includes('b.sc') || lower.includes('b.com') || lower.includes('b.a') || lower.includes('bba') || lower.includes('bsc') || lower.includes('bcom') || lower.includes('ba') ||
+      codeUpper.includes('MT') || codeUpper.includes('SS') || codeUpper.includes('HS') || codeUpper.includes('MA') || codeUpper.includes('PH') || codeUpper.includes('CH')
+    ) {
       program = 'B.A / B.Com / B.Sc / BBA';
-    } else if (lower.includes('1st year') || lower.includes('first year') || lower.includes('fresher') || lower.includes('induction')) {
+    } else if (lower.includes('1st year') || lower.includes('first year') || lower.includes('fresher') || lower.includes('induction') || codeUpper.includes('11SS') || codeUpper.includes('11PH')) {
       program = '1st Year (Freshers)';
     } else if (lower.includes('pg') || lower.includes('postgraduate') || lower.includes('master')) {
       program = 'Postgraduate (PG)';
@@ -480,22 +527,29 @@ Ensure valid JSON only with NO markdown fences or backticks.
       program = 'Undergraduate (UG)';
     }
 
-    // Date extraction
-    const dateMatch = line.match(/(\d{1,2}(?:\s*[-–]\s*\d{1,2})?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*(?:\d{4})?)/i) ||
-                      line.match(/(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/);
+    // 7. Date extraction
+    const dateMatch = cleanLine.match(/(\d{1,2}(?:\s*[-–]\s*\d{1,2})?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*(?:\d{4})?)/i) ||
+                      cleanLine.match(/(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/);
 
     const today = new Date().toISOString().split('T')[0];
 
+    // Build structured notes
+    const notesParts = [];
+    if (courseCode) notesParts.push(`Code: ${courseCode}`);
+    if (faculty) notesParts.push(`Faculty: ${faculty}`);
+    if (credits) notesParts.push(`L-T-P: ${credits}`);
+    const structuredNotes = notesParts.length > 0 ? notesParts.join(' • ') : cleanLine;
+
     return {
       id: `ev-ai-${Date.now()}-${idx}`,
-      title: line.replace(/[|,-]/g, ' ').trim().slice(0, 80) || 'Academic Milestone',
+      title: cleanTitle,
       startDate: today,
       endDate: today,
-      dateDisplay: dateMatch ? dateMatch[0] : 'Scheduled',
+      dateDisplay: dateMatch ? dateMatch[0] : (category === 'class' || category === 'lab' ? 'Active Course' : 'Scheduled'),
       category,
       program,
       batch: 'All Batches',
-      notes: line
+      notes: structuredNotes
     };
   }
 

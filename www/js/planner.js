@@ -66,15 +66,9 @@ export class PlannerModule {
     this.bulkSyncRemindersBtn = document.getElementById('bulk-sync-reminders-btn');
     this.exportIcsBtn = document.getElementById('export-ics-btn');
 
-    // Timetable & Exam DOM Elements
-    this.timetableGrid = document.getElementById('timetable-grid');
+    // Exam & Spaced Repetition Elements
     this.examListEl = document.getElementById('exam-countdown-list');
     this.spacedListEl = document.getElementById('spaced-topics-list');
-
-    // Traditional Dialogs & Forms
-    this.timetableDialog = document.getElementById('timetable-dialog');
-    this.timetableForm = document.getElementById('timetable-form');
-    this.addSlotBtn = document.getElementById('add-timetable-slot-btn');
 
     this.examDialog = document.getElementById('exam-dialog');
     this.examForm = document.getElementById('exam-form');
@@ -102,43 +96,7 @@ export class PlannerModule {
   }
 
   bindEvents() {
-    // 1. Timetable Slot Modal
-    if (this.addSlotBtn) {
-      this.addSlotBtn.addEventListener('click', () => {
-        this.timetableForm.reset();
-        this.timetableDialog.showModal();
-      });
-    }
-
-    if (this.timetableForm) {
-      this.timetableForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const day = document.getElementById('slot-day-select').value;
-        const subject = document.getElementById('slot-subject-input').value.trim();
-        const startTime = document.getElementById('slot-start-time').value;
-        const endTime = document.getElementById('slot-end-time').value;
-        const color = document.getElementById('slot-color-select').value;
-
-        if (!subject || !startTime || !endTime) return;
-
-        const state = storage.getState();
-        state.timetable.push({
-          id: `tt-${Date.now()}`,
-          day,
-          subject,
-          startTime,
-          endTime,
-          color
-        });
-
-        storage.save(state);
-        this.timetableDialog.close();
-        this.app.showToast('Slot Added', `Added ${subject} to ${day}`, 'success');
-        this.render();
-      });
-    }
-
-    // 2. Exam Modal
+    // 1. Exam Modal
     if (this.addExamBtn) {
       this.addExamBtn.addEventListener('click', () => {
         this.examForm.reset();
@@ -226,14 +184,14 @@ export class PlannerModule {
     // 2. Clear / Reset Calendar Button
     if (this.clearCalendarBtn) {
       this.clearCalendarBtn.addEventListener('click', () => {
-        if (this.activeCalendar) {
-          storage.deleteAcademicCalendar(this.activeCalendar.id);
-        }
-        this.activeCalendar = null;
+        storage.resetToDefaultCalendar();
+        this.initActiveCalendar();
         this.selectedProgram = 'All Programs';
         this.selectedCategory = 'all';
+        this.searchQuery = '';
+        if (this.calendarSearchInput) this.calendarSearchInput.value = '';
         this.render();
-        this.app.showToast('Calendar Cleared', 'You can upload a new schedule anytime.', 'info');
+        this.app.showToast('Schedule Reset 🔄', 'Reset to clean default academic schedule.', 'info');
       });
     }
 
@@ -327,10 +285,27 @@ export class PlannerModule {
 
     // 7. Search Input
     if (this.calendarSearchInput) {
+      const clearBtn = document.getElementById('calendar-search-clear-btn');
+
+      const updateClearBtn = () => {
+        if (clearBtn) clearBtn.style.display = this.calendarSearchInput.value ? 'flex' : 'none';
+      };
+
       this.calendarSearchInput.addEventListener('input', (e) => {
         this.searchQuery = e.target.value.trim().toLowerCase();
+        updateClearBtn();
         this.renderCalendarFeed();
       });
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          this.calendarSearchInput.value = '';
+          this.searchQuery = '';
+          clearBtn.style.display = 'none';
+          this.calendarSearchInput.focus();
+          this.renderCalendarFeed();
+        });
+      }
     }
 
     // 8. Category Filter Chips
@@ -449,14 +424,6 @@ export class PlannerModule {
       this.selectedProgram = 'All Programs';
       this.selectedCategory = 'all';
 
-      // Auto-sync extracted timetable slots if present
-      if (parsedCalendar.timetableSlots && parsedCalendar.timetableSlots.length > 0) {
-        const addedSlots = aiCalendarParser.syncSlotsToTimetable(parsedCalendar.timetableSlots);
-        if (addedSlots > 0) {
-          this.app.showToast('Timetable Synced 🕒', `Added ${addedSlots} weekly lecture slots directly to Timetable Grid!`, 'success');
-        }
-      }
-
       await new Promise((r) => setTimeout(r, 400));
 
       if (this.uploadDialog) this.uploadDialog.close();
@@ -476,7 +443,6 @@ export class PlannerModule {
     this.renderCalendarMetrics();
     this.renderProgramPills();
     this.renderCalendarFeed();
-    this.renderTimetable();
     this.renderExams();
     this.renderSpacedTopics();
   }
@@ -484,7 +450,7 @@ export class PlannerModule {
   renderCalendarHeader() {
     if (!this.activeCalendar) {
       if (this.activeCalendarBadge) this.activeCalendarBadge.textContent = 'No Schedule Uploaded';
-      if (this.calendarHeading) this.calendarHeading.textContent = 'Academic Calendar & Course Timetable Hub';
+      if (this.calendarHeading) this.calendarHeading.textContent = 'Academic Calendar Hub';
       if (this.calendarSubheading) {
         this.calendarSubheading.textContent = 'Upload your university academic calendar (Excel, PDF, Image, CSV) or paste circular text to sort events by program, track exams, and sync schedules.';
       }
@@ -496,7 +462,7 @@ export class PlannerModule {
       this.activeCalendarBadge.textContent = `${this.activeCalendar.institution || 'Academic Calendar'} • ${this.activeCalendar.semester || this.activeCalendar.academicYear || 'Current Schedule'}`;
     }
     if (this.calendarHeading) {
-      this.calendarHeading.textContent = this.activeCalendar.title || 'Academic Calendar & Timetable';
+      this.calendarHeading.textContent = this.activeCalendar.title || 'Academic Calendar';
     }
     if (this.calendarSubheading) {
       this.calendarSubheading.textContent = `Applicable to: ${this.activeCalendar.applicableBatches || 'All Enrolled Batches'}. Filter below to view specific programs and courses.`;
@@ -596,28 +562,33 @@ export class PlannerModule {
     const rawEvents = this.activeCalendar.events || [];
     const now = new Date();
 
-    // Filter by Program
+    const programIcons = {
+      'B-Tech (4 Years)': '💻',
+      'BCA / MCA / MBA': '🖥️',
+      'B.A / B.Com / B.Sc / BBA': '📊',
+      '1st Year (Freshers)': '🎓',
+      'All Programs': '🌟',
+      'Undergraduate (UG)': '📚',
+      'Postgraduate (PG)': '🎓'
+    };
+
+    // Filter events by Category and Search Query
     let filtered = rawEvents.filter((ev) => {
-      if (this.selectedProgram === 'All Programs') return true;
-      return ev.program === this.selectedProgram || ev.program === 'All Programs';
+      // Category matching
+      if (this.selectedCategory !== 'all' && ev.category !== this.selectedCategory) {
+        return false;
+      }
+      // Search matching
+      if (this.searchQuery) {
+        const q = this.searchQuery;
+        const matchTitle = ev.title.toLowerCase().includes(q);
+        const matchNotes = ev.notes && ev.notes.toLowerCase().includes(q);
+        const matchProgram = ev.program && ev.program.toLowerCase().includes(q);
+        const matchDate = ev.dateDisplay && ev.dateDisplay.toLowerCase().includes(q);
+        if (!matchTitle && !matchNotes && !matchProgram && !matchDate) return false;
+      }
+      return true;
     });
-
-    // Filter by Category
-    if (this.selectedCategory !== 'all') {
-      filtered = filtered.filter((ev) => ev.category === this.selectedCategory);
-    }
-
-    // Filter by Search Query
-    if (this.searchQuery) {
-      filtered = filtered.filter((ev) => {
-        return (
-          ev.title.toLowerCase().includes(this.searchQuery) ||
-          (ev.notes && ev.notes.toLowerCase().includes(this.searchQuery)) ||
-          (ev.program && ev.program.toLowerCase().includes(this.searchQuery)) ||
-          (ev.dateDisplay && ev.dateDisplay.toLowerCase().includes(this.searchQuery))
-        );
-      });
-    }
 
     // Update Counts & Badges
     if (this.eventsCountHeading) {
@@ -638,82 +609,189 @@ export class PlannerModule {
       return;
     }
 
-    // Render Event Cards
-    this.eventsFeed.innerHTML = filtered
-      .map((ev) => {
-        const catBadgeClass = `badge-cat-${ev.category || 'general'}`;
-        const catIconMap = {
-          exam: '🎯 EXAM',
-          registration: '📝 REGISTRATION',
-          lab: '🔬 LAB / VIVA',
-          holiday: '🎉 HOLIDAY',
-          vacation: '🏖️ VACATION',
-          class: '📚 CLASS',
-          project: '💼 PROJECT',
-          result: '🏆 RESULTS',
-          general: '📌 NOTICE'
-        };
-        const catLabel = catIconMap[ev.category] || '📌 EVENT';
+    // Determine Course Sections to build
+    const sectionsToBuild = [];
+    const definedPrograms = this.activeCalendar.programs && this.activeCalendar.programs.length > 0
+      ? this.activeCalendar.programs
+      : ['B-Tech (4 Years)', 'BCA / MCA / MBA', 'B.A / B.Com / B.Sc / BBA', '1st Year (Freshers)', 'All Programs'];
 
-        let countdownBadge = '';
-        if (ev.startDate) {
-          const evDate = new Date(ev.startDate);
-          const diffDays = Math.ceil((evDate - now) / (1000 * 60 * 60 * 24));
-          if (diffDays < 0) {
-            countdownBadge = `<span class="event-rel-time past">Past Milestone</span>`;
-          } else if (diffDays === 0) {
-            countdownBadge = `<span class="event-rel-time today">Today!</span>`;
-          } else if (diffDays === 1) {
-            countdownBadge = `<span class="event-rel-time soon">Tomorrow</span>`;
-          } else {
-            countdownBadge = `<span class="event-rel-time future">In ${diffDays} days</span>`;
+    if (this.selectedProgram === 'All Programs') {
+      definedPrograms.forEach((prog) => {
+        if (prog !== 'All Programs') {
+          const eventsInCourse = filtered.filter((ev) => ev.program === prog);
+          if (eventsInCourse.length > 0) {
+            sectionsToBuild.push({ program: prog, title: `${prog} Schedule`, events: eventsInCourse });
           }
         }
+      });
 
-        const isExam = ev.category === 'exam' || ev.title.toLowerCase().includes('exam') || ev.title.toLowerCase().includes('test');
+      // University-Wide / Common Milestones
+      const commonEvents = filtered.filter((ev) => !ev.program || ev.program === 'All Programs' || ev.program === 'Common');
+      if (commonEvents.length > 0) {
+        sectionsToBuild.push({
+          program: 'All Programs',
+          title: '🌟 University-Wide & Common Milestones',
+          events: commonEvents
+        });
+      }
+
+      // Any remaining uncategorized events
+      const alreadyIncludedIds = new Set(sectionsToBuild.flatMap((s) => s.events.map((e) => e.id)));
+      const leftoverEvents = filtered.filter((ev) => !alreadyIncludedIds.has(ev.id));
+      if (leftoverEvents.length > 0) {
+        sectionsToBuild.push({
+          program: 'General Courses',
+          title: '📚 General Academic Schedule',
+          events: leftoverEvents
+        });
+      }
+    } else {
+      // Specific Program Selected
+      const eventsInSelected = filtered.filter((ev) => ev.program === this.selectedProgram || ev.program === 'All Programs');
+      sectionsToBuild.push({
+        program: this.selectedProgram,
+        title: `${this.selectedProgram} Academic Schedule`,
+        events: eventsInSelected.length > 0 ? eventsInSelected : filtered
+      });
+    }
+
+    // Render grouped course sections with cards inside
+    this.eventsFeed.innerHTML = sectionsToBuild
+      .map((section) => {
+        const prog = section.program;
+        const icon = programIcons[prog] || '📚';
+        const courseEvents = section.events || [];
+        const examCount = courseEvents.filter((e) => e.category === 'exam' || e.title.toLowerCase().includes('exam') || e.title.toLowerCase().includes('test')).length;
+
+        const cardsHtml = courseEvents
+          .map((ev) => this.renderEventCardHtml(ev, now))
+          .join('');
 
         return `
-          <div class="ai-event-card card" data-event-id="${ev.id}">
-            <div class="event-card-top">
-              <div class="event-tags-row">
-                <span class="event-category-badge ${catBadgeClass}">${catLabel}</span>
-                <span class="event-program-tag">${this.escapeHtml(ev.program || 'All Programs')}</span>
-                ${ev.batch ? `<span class="event-batch-tag">${this.escapeHtml(ev.batch)}</span>` : ''}
+          <div class="course-schedule-section" data-course-section="${this.escapeHtml(prog)}">
+            <div class="course-section-header">
+              <div class="course-section-title-wrap">
+                <span class="course-section-icon">${icon}</span>
+                <div class="course-section-text">
+                  <h3>${this.escapeHtml(section.title)}</h3>
+                  <span class="course-section-subtitle">${courseEvents.length} Calendar Milestones · ${examCount} Exam Target${examCount === 1 ? '' : 's'}</span>
+                </div>
               </div>
-              ${countdownBadge}
-            </div>
-
-            <div class="event-main-info">
-              <h4 class="event-title">${this.escapeHtml(ev.title)}</h4>
-              <div class="event-date-row">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span class="event-date-text">${this.escapeHtml(ev.dateDisplay || ev.startDate || 'Scheduled')}</span>
-              </div>
-              ${ev.notes ? `<p class="event-notes-text">${this.escapeHtml(ev.notes)}</p>` : ''}
-            </div>
-
-            <div class="event-action-footer">
-              <button class="btn btn-subtle btn-xs" data-sync-event-reminder="${ev.id}">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                <span>Sync to Reminder</span>
-              </button>
-              ${
-                isExam
-                  ? `
-                <button class="btn btn-primary btn-xs" data-sync-event-exam="${ev.id}">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                  <span>+ Add Exam Target</span>
+              <div class="course-section-actions">
+                ${examCount > 0 ? `
+                  <button class="btn btn-subtle btn-xs" data-sync-course-exams="${this.escapeHtml(prog)}" title="Sync all ${this.escapeHtml(prog)} exams to Deadlines tracker">
+                    ⚡ Sync ${this.escapeHtml(prog.split(' ')[0])} Exams
+                  </button>
+                ` : ''}
+                <button class="btn btn-subtle btn-xs" data-sync-course-reminders="${this.escapeHtml(prog)}" title="Sync all ${this.escapeHtml(prog)} dates to Smart Reminders">
+                  🔔 Sync Reminders
                 </button>
-              `
-                  : ''
-              }
+              </div>
+            </div>
+
+            <div class="course-cards-grid">
+              ${cardsHtml}
             </div>
           </div>
         `;
       })
       .join('');
 
-    // Attach event card click listeners
+    // Attach sync button handlers
+    this.bindEventCardActions(rawEvents);
+  }
+
+  renderEventCardHtml(ev, now) {
+    const catBadgeClass = `badge-cat-${ev.category || 'general'}`;
+    const catIconMap = {
+      exam: '🎯 EXAM',
+      registration: '📝 REGISTRATION',
+      lab: '🔬 LAB / VIVA',
+      holiday: '🎉 HOLIDAY',
+      vacation: '🏖️ VACATION',
+      class: '📚 CLASS',
+      project: '💼 PROJECT',
+      result: '🏆 RESULTS',
+      general: '📌 NOTICE'
+    };
+    const catLabel = catIconMap[ev.category] || '📌 EVENT';
+
+    let countdownBadge = '';
+    if (ev.startDate) {
+      const evDate = new Date(ev.startDate);
+      const diffDays = Math.ceil((evDate - now) / (1000 * 60 * 60 * 24));
+      if (diffDays < 0) {
+        countdownBadge = `<span class="event-rel-time past">Past Milestone</span>`;
+      } else if (diffDays === 0) {
+        countdownBadge = `<span class="event-rel-time today">Today!</span>`;
+      } else if (diffDays === 1) {
+        countdownBadge = `<span class="event-rel-time soon">Tomorrow</span>`;
+      } else {
+        countdownBadge = `<span class="event-rel-time future">In ${diffDays} days</span>`;
+      }
+    }
+
+    const isExam = ev.category === 'exam' || ev.title.toLowerCase().includes('exam') || ev.title.toLowerCase().includes('test');
+
+    return `
+      <div class="ai-event-card card" data-event-id="${ev.id}">
+        <div class="event-card-top">
+          <div class="event-tags-row">
+            <span class="event-category-badge ${catBadgeClass}">${catLabel}</span>
+            <span class="event-program-tag">${this.escapeHtml(ev.program || 'All Programs')}</span>
+            ${ev.batch ? `<span class="event-batch-tag">${this.escapeHtml(ev.batch)}</span>` : ''}
+          </div>
+          <div class="event-top-right">
+            ${countdownBadge}
+            <button class="event-card-delete-btn" data-delete-event="${ev.id}" title="Remove this event / card">✕</button>
+          </div>
+        </div>
+
+        <div class="event-main-info">
+          <h4 class="event-title">${this.escapeHtml(ev.title)}</h4>
+          <div class="event-date-row">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span class="event-date-text">${this.escapeHtml(ev.dateDisplay || ev.startDate || 'Scheduled')}</span>
+          </div>
+          ${ev.notes ? `<p class="event-notes-text">${this.escapeHtml(ev.notes)}</p>` : ''}
+        </div>
+
+        <div class="event-action-footer">
+          <button class="btn btn-subtle btn-xs" data-sync-event-reminder="${ev.id}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span>Sync to Reminder</span>
+          </button>
+          ${
+            isExam
+              ? `
+            <button class="btn btn-primary btn-xs" data-sync-event-exam="${ev.id}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>+ Add Target</span>
+            </button>
+          `
+              : ''
+          }
+        </div>
+      </div>
+    `;
+  }
+
+  bindEventCardActions(rawEvents) {
+    // Individual Card Delete Button
+    this.eventsFeed.querySelectorAll('[data-delete-event]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const evId = btn.dataset.deleteEvent;
+        if (this.activeCalendar) {
+          storage.deleteCalendarEvent(this.activeCalendar.id, evId);
+          this.initActiveCalendar();
+          this.renderCalendarFeed();
+          this.app.showToast('Card Removed 🗑️', 'Event removed from calendar.', 'info');
+        }
+      });
+    });
+
+    // Individual Card Reminders
     this.eventsFeed.querySelectorAll('[data-sync-event-reminder]').forEach((btn) => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -726,6 +804,7 @@ export class PlannerModule {
       });
     });
 
+    // Individual Card Exam Targets
     this.eventsFeed.querySelectorAll('[data-sync-event-exam]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -738,64 +817,27 @@ export class PlannerModule {
         }
       });
     });
-  }
 
-  renderTimetable() {
-    if (!this.timetableGrid) return;
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const state = storage.getState();
-
-    this.timetableGrid.innerHTML = days
-      .map((day) => {
-        const slotsForDay = state.timetable
-          .filter((s) => s.day === day)
-          .sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-        const slotsHtml = slotsForDay.length
-          ? slotsForDay
-              .map(
-                (s) => `
-              <div class="timetable-slot-item slot-${s.color || 'blue'}" data-slot-id="${s.id}">
-                <span class="slot-time">${s.startTime} - ${s.endTime}</span>
-                <span class="slot-title">${this.escapeHtml(s.subject)}</span>
-                <span class="slot-delete-btn" data-delete-slot="${s.id}">✕</span>
-              </div>
-            `
-              )
-              .join('')
-          : `<p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 1rem;">No slots</p>`;
-
-        return `
-          <div class="timetable-day-col" data-day-name="${day}">
-            <div class="timetable-day-header">${day}</div>
-            ${slotsHtml}
-          </div>
-        `;
-      })
-      .join('');
-
-    // Day column click to add slot
-    this.timetableGrid.querySelectorAll('.timetable-day-col').forEach((col) => {
-      col.addEventListener('click', (e) => {
-        if (e.target.closest('.timetable-slot-item')) return;
-        const day = col.dataset.dayName;
-        if (this.timetableForm) {
-          this.timetableForm.reset();
-          const daySelect = document.getElementById('slot-day-select');
-          if (daySelect && day) daySelect.value = day;
-          if (this.timetableDialog) this.timetableDialog.showModal();
-        }
+    // Course Section Bulk Exam Sync
+    this.eventsFeed.querySelectorAll('[data-sync-course-exams]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const prog = btn.dataset.syncCourseExams;
+        if (!this.activeCalendar) return;
+        const count = aiCalendarParser.bulkSyncExams(this.activeCalendar, prog);
+        this.renderExams();
+        this.app.showToast('Exams Synced 🎯', `Added ${count} ${prog} exams to Countdown tracker.`, 'success');
       });
     });
 
-    // Delete buttons
-    this.timetableGrid.querySelectorAll('[data-delete-slot]').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
+    // Course Section Bulk Reminder Sync
+    this.eventsFeed.querySelectorAll('[data-sync-course-reminders]').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        const id = btn.dataset.deleteSlot;
-        const state = storage.getState();
-        state.timetable = state.timetable.filter((s) => s.id !== id);
-        storage.save(state);
+        const prog = btn.dataset.syncCourseReminders;
+        if (!this.activeCalendar) return;
+        const count = await aiCalendarParser.bulkSyncReminders(this.activeCalendar, prog);
+        this.app.showToast('Reminders Created 🔔', `Scheduled ${count} ${prog} milestone alerts.`, 'success');
       });
     });
   }
