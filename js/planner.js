@@ -5,7 +5,7 @@
  */
 
 import { storage } from './storage.js';
-import { aiCalendarParser, SAMPLE_ACADEMIC_CALENDAR } from './ai-calendar-parser.js';
+import { aiCalendarParser } from './ai-calendar-parser.js';
 
 export class PlannerModule {
   constructor(appCoordinator) {
@@ -39,7 +39,7 @@ export class PlannerModule {
     // AI Upload & Key Dialogs
     this.uploadDialog = document.getElementById('ai-calendar-upload-dialog');
     this.openUploadBtn = document.getElementById('open-upload-calendar-modal-btn');
-    this.loadSampleBtn = document.getElementById('load-sample-calendar-btn');
+    this.clearCalendarBtn = document.getElementById('clear-calendar-btn');
     this.openKeyBtn = document.getElementById('open-ai-key-modal-btn');
     this.aiKeyDialog = document.getElementById('ai-key-dialog');
     this.saveKeyBtn = document.getElementById('save-ai-key-btn');
@@ -98,14 +98,7 @@ export class PlannerModule {
   }
 
   initActiveCalendar() {
-    const saved = storage.getActiveCalendar();
-    if (saved) {
-      this.activeCalendar = saved;
-    } else {
-      // Seed initial default Jaypee University 2026-27 Calendar
-      this.activeCalendar = SAMPLE_ACADEMIC_CALENDAR;
-      storage.saveAcademicCalendar(SAMPLE_ACADEMIC_CALENDAR);
-    }
+    this.activeCalendar = storage.getActiveCalendar();
   }
 
   bindEvents() {
@@ -230,15 +223,17 @@ export class PlannerModule {
       });
     }
 
-    // 2. Load Sample Jaypee Calendar Seed
-    if (this.loadSampleBtn) {
-      this.loadSampleBtn.addEventListener('click', () => {
-        this.activeCalendar = SAMPLE_ACADEMIC_CALENDAR;
-        storage.saveAcademicCalendar(SAMPLE_ACADEMIC_CALENDAR);
+    // 2. Clear / Reset Calendar Button
+    if (this.clearCalendarBtn) {
+      this.clearCalendarBtn.addEventListener('click', () => {
+        if (this.activeCalendar) {
+          storage.deleteAcademicCalendar(this.activeCalendar.id);
+        }
+        this.activeCalendar = null;
         this.selectedProgram = 'All Programs';
         this.selectedCategory = 'all';
         this.render();
-        this.app.showToast('Jaypee University Seed Loaded 🎓', 'Odd Semester 2026-27 schedule activated.', 'success');
+        this.app.showToast('Calendar Cleared', 'You can upload a new schedule anytime.', 'info');
       });
     }
 
@@ -353,7 +348,10 @@ export class PlannerModule {
     // 9. Bulk Sync Actions
     if (this.bulkSyncExamsBtn) {
       this.bulkSyncExamsBtn.addEventListener('click', () => {
-        if (!this.activeCalendar) return;
+        if (!this.activeCalendar) {
+          this.app.showToast('No Calendar', 'Upload an academic calendar first.', 'info');
+          return;
+        }
         const count = aiCalendarParser.bulkSyncExams(this.activeCalendar, this.selectedProgram);
         this.renderExams();
         this.app.showToast('Exams Synced 🎯', `Added ${count} exam targets to your Countdown tracker.`, 'success');
@@ -362,7 +360,10 @@ export class PlannerModule {
 
     if (this.bulkSyncRemindersBtn) {
       this.bulkSyncRemindersBtn.addEventListener('click', async () => {
-        if (!this.activeCalendar) return;
+        if (!this.activeCalendar) {
+          this.app.showToast('No Calendar', 'Upload an academic calendar first.', 'info');
+          return;
+        }
         const count = await aiCalendarParser.bulkSyncReminders(this.activeCalendar, this.selectedProgram);
         this.app.showToast('Reminders Created 🔔', `Scheduled ${count} academic milestone notifications.`, 'success');
       });
@@ -370,7 +371,10 @@ export class PlannerModule {
 
     if (this.exportIcsBtn) {
       this.exportIcsBtn.addEventListener('click', () => {
-        if (!this.activeCalendar) return;
+        if (!this.activeCalendar) {
+          this.app.showToast('No Calendar', 'Upload an academic calendar first.', 'info');
+          return;
+        }
         aiCalendarParser.exportToICS(this.activeCalendar, this.selectedProgram);
         this.app.showToast('iCal Exported 📅', `Exported .ics for ${this.selectedProgram}.`, 'success');
       });
@@ -393,7 +397,7 @@ export class PlannerModule {
 
     // Reset progress steps
     for (let i = 1; i <= 4; i++) {
-      const stepEl = document.getElementById(`step-1`);
+      const stepEl = document.getElementById(`step-${i}`);
       if (stepEl) stepEl.classList.remove('active', 'completed');
     }
   }
@@ -403,7 +407,7 @@ export class PlannerModule {
     const textVal = this.textInput ? this.textInput.value.trim() : '';
 
     if (isFileTab && !this.selectedUploadFile) {
-      this.app.showToast('Select a File', 'Please choose an Excel, CSV, PDF, or Image file to parse.', 'warning');
+      this.app.showToast('Select a File', 'Please choose an Excel (.xlsx, .xls), CSV, PDF, or Image file.', 'warning');
       return;
     }
 
@@ -457,7 +461,7 @@ export class PlannerModule {
 
       if (this.uploadDialog) this.uploadDialog.close();
       this.render();
-      this.app.showToast('Calendar Processed ✨', `Extracted ${parsedCalendar.events.length} academic milestones and courses.`, 'success');
+      this.app.showToast('Schedule Processed ✨', `Extracted ${parsedCalendar.events.length} academic milestones & courses.`, 'success');
     } catch (err) {
       console.error('[Planner] Upload Error:', err);
       this.app.showToast('Processing Error', err.message || 'Could not parse document.', 'danger');
@@ -478,45 +482,65 @@ export class PlannerModule {
   }
 
   renderCalendarHeader() {
-    if (!this.activeCalendar) return;
+    if (!this.activeCalendar) {
+      if (this.activeCalendarBadge) this.activeCalendarBadge.textContent = 'No Schedule Uploaded';
+      if (this.calendarHeading) this.calendarHeading.textContent = 'Academic Calendar & Course Timetable Hub';
+      if (this.calendarSubheading) {
+        this.calendarSubheading.textContent = 'Upload your university academic calendar (Excel, PDF, Image, CSV) or paste circular text to sort events by program, track exams, and sync schedules.';
+      }
+      if (this.clearCalendarBtn) this.clearCalendarBtn.style.display = 'none';
+      return;
+    }
+
     if (this.activeCalendarBadge) {
-      this.activeCalendarBadge.textContent = `${this.activeCalendar.institution || 'Academic Calendar'} • ${this.activeCalendar.semester || this.activeCalendar.academicYear || 'Current Semester'}`;
+      this.activeCalendarBadge.textContent = `${this.activeCalendar.institution || 'Academic Calendar'} • ${this.activeCalendar.semester || this.activeCalendar.academicYear || 'Current Schedule'}`;
     }
     if (this.calendarHeading) {
       this.calendarHeading.textContent = this.activeCalendar.title || 'Academic Calendar & Timetable';
     }
     if (this.calendarSubheading) {
-      this.calendarSubheading.textContent = `Applicable to: ${this.activeCalendar.applicableBatches || 'All Batches and Programs'}. Filter below to isolate specific courses.`;
+      this.calendarSubheading.textContent = `Applicable to: ${this.activeCalendar.applicableBatches || 'All Enrolled Batches'}. Filter below to view specific programs and courses.`;
     }
+    if (this.clearCalendarBtn) this.clearCalendarBtn.style.display = 'inline-flex';
   }
 
   renderCalendarMetrics() {
-    const stats = this.activeCalendar?.summaryStats || {
-      totalSemesterDays: 152,
-      teachingDays: 94,
-      examDays: 18,
-      nonTeachingDays: 9,
-      holidays: 33
+    if (!this.activeCalendar) {
+      if (this.metricTotalDays) this.metricTotalDays.textContent = '--';
+      if (this.metricTeachingDays) this.metricTeachingDays.textContent = '--';
+      if (this.metricExamDays) this.metricExamDays.textContent = '--';
+      if (this.metricHolidayDays) this.metricHolidayDays.textContent = '--';
+      if (this.metricNonTeaching) this.metricNonTeaching.textContent = '--';
+      return;
+    }
+
+    const stats = this.activeCalendar.summaryStats || {
+      totalSemesterDays: 150,
+      teachingDays: 90,
+      examDays: 15,
+      nonTeachingDays: 10,
+      holidays: 25
     };
 
-    if (this.metricTotalDays) this.metricTotalDays.textContent = stats.totalSemesterDays || '152';
-    if (this.metricTeachingDays) this.metricTeachingDays.textContent = stats.teachingDays || '94';
-    if (this.metricExamDays) this.metricExamDays.textContent = stats.examDays || '18';
-    if (this.metricHolidayDays) this.metricHolidayDays.textContent = stats.holidays || '33';
-    if (this.metricNonTeaching) this.metricNonTeaching.textContent = stats.nonTeachingDays || '9';
+    if (this.metricTotalDays) this.metricTotalDays.textContent = stats.totalSemesterDays || '150';
+    if (this.metricTeachingDays) this.metricTeachingDays.textContent = stats.teachingDays || '90';
+    if (this.metricExamDays) this.metricExamDays.textContent = stats.examDays || '15';
+    if (this.metricHolidayDays) this.metricHolidayDays.textContent = stats.holidays || '25';
+    if (this.metricNonTeaching) this.metricNonTeaching.textContent = stats.nonTeachingDays || '10';
   }
 
   renderProgramPills() {
-    if (!this.programPillsContainer || !this.activeCalendar) return;
-    const programs = this.activeCalendar.programs || ['All Programs', 'B-Tech (4 Years)', 'BCA / MCA / MBA', 'B.A / B.Com / B.Sc / BBA', '1st Year (All)'];
+    if (!this.programPillsContainer) return;
+    const programs = this.activeCalendar ? this.activeCalendar.programs || ['All Programs'] : ['All Programs'];
 
-    // Distinct emoji mappings
     const emojiMap = {
       'All Programs': '🌟',
       'B-Tech (4 Years)': '💻',
       'BCA / MCA / MBA': '🖥️',
       'B.A / B.Com / B.Sc / BBA': '📊',
-      '1st Year (All)': '🎓'
+      '1st Year (Freshers)': '🎓',
+      'Undergraduate (UG)': '📚',
+      'Postgraduate (PG)': '🎓'
     };
 
     this.programPillsContainer.innerHTML = programs
@@ -541,7 +565,33 @@ export class PlannerModule {
   }
 
   renderCalendarFeed() {
-    if (!this.eventsFeed || !this.activeCalendar) return;
+    if (!this.eventsFeed) return;
+
+    if (!this.activeCalendar || !this.activeCalendar.events || this.activeCalendar.events.length === 0) {
+      if (this.eventsCountHeading) this.eventsCountHeading.textContent = 'Academic Milestones & Courses (0 Events)';
+      if (this.currentFilterBadge) this.currentFilterBadge.textContent = 'No Schedule Uploaded';
+
+      this.eventsFeed.innerHTML = `
+        <div class="calendar-empty-state">
+          <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📅</div>
+          <h3 style="font-weight:700; color: var(--text-primary); margin-bottom: 0.4rem;">No Academic Calendar Uploaded Yet</h3>
+          <p style="font-size:0.85rem; color: var(--text-muted); max-width: 480px; margin: 0 auto 1.25rem;">Upload your university academic calendar, timetable spreadsheet (Excel, CSV), PDF, or image to sort events by program and sync exam deadlines.</p>
+          <button class="btn btn-primary" id="empty-state-upload-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Upload Calendar / Timetable</span>
+          </button>
+        </div>
+      `;
+
+      const emptyBtn = document.getElementById('empty-state-upload-btn');
+      if (emptyBtn) {
+        emptyBtn.addEventListener('click', () => {
+          this.resetUploadModal();
+          if (this.uploadDialog) this.uploadDialog.showModal();
+        });
+      }
+      return;
+    }
 
     const rawEvents = this.activeCalendar.events || [];
     const now = new Date();
@@ -605,7 +655,6 @@ export class PlannerModule {
         };
         const catLabel = catIconMap[ev.category] || '📌 EVENT';
 
-        // Relative countdown calculation
         let countdownBadge = '';
         if (ev.startDate) {
           const evDate = new Date(ev.startDate);

@@ -31,7 +31,6 @@ StudyPulse includes an offline-first **AI Schedule Intelligence Engine** designe
 - 📑 **CSV / TSV Files (`.csv`, `.tsv`)**: Fast table row and column parsing.
 - 🖼️ **PDFs & Images (`.pdf`, `.png`, `.jpg`, `.webp`)**: Multi-modal layout detection and neural table OCR (with optional Google Gemini Vision API key support).
 - 📝 **Paste University Circulars**: Natural language parser extracts dates, days, start/end times, and program batches.
-- 🎓 **Jaypee University 2026-27 Seed**: Pre-loaded with all 30 milestones, exams (T1, T2, Mid-Term, End-Sem, Make-up), lab-viva tests, registration windows, and holiday breaks.
 
 ### 2. Intelligent Program & Course Filtering
 - Filter milestones instantly by degree program:
@@ -40,6 +39,7 @@ StudyPulse includes an offline-first **AI Schedule Intelligence Engine** designe
   - `🖥️ BCA / MCA / MBA`
   - `📊 B.A / B.Com / B.Sc / BBA`
   - `🎓 1st Year (Freshers)`
+  - Automatically adapts to all custom degree programs in your uploaded document!
 - Category filter chips: `Exams`, `Registrations`, `Labs / Viva`, `Holidays`, `Vacations`, `Classes`.
 - Live keyword search across subjects, HoD caution notices, and answer sheet display dates.
 
@@ -50,7 +50,7 @@ StudyPulse includes an offline-first **AI Schedule Intelligence Engine** designe
 - **`📅 Export .ics`**: Export customized schedules to Google Calendar, Apple Calendar, or Outlook.
 
 ### 4. Semester Analytics
-- Instant metrics bar: Total Semester Days (152), Teaching Days (94), Exam Days (18), Holidays & Vacations (33), Non-Teaching Days (9).
+- Instant metrics bar: Total Semester Days, Teaching Days, Exam Days, Holidays & Vacations, Non-Teaching Days.
 
 ---
 
@@ -149,7 +149,6 @@ pr1/
 - **[NEW]** **1-Click Sync to Exam Deadlines**: Send exam milestones (T1, T2, Mid Term, End Sem, Make-up) directly into the live countdown tracker.
 - **[NEW]** **1-Click Sync to Smart Reminders**: Bulk-schedule notifications for attendance reviews, caution notices, and ERP result dates.
 - **[NEW]** **iCal (.ics) Export**: Export customized program schedules directly to Apple Calendar, Google Calendar, and Microsoft Outlook.
-- **[NEW]** **Pre-Loaded Jaypee University 2026-27 Seed**: Complete Odd Semester 2026-27 academic calendar with 30 categorized milestones and semester summary metrics.
 - **[NEW]** Optional **Google Gemini Vision API Key** modal configuration.
 
 ### v1.1.0 — Background & Lock Screen Notifications (2026-08-14)

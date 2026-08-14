@@ -347,10 +347,10 @@
               <div class="ai-hub-info">
                 <div class="ai-badge-row">
                   <span class="ai-pill-tag">✨ AI Schedule Intelligence</span>
-                  <span id="active-calendar-badge" class="ai-calendar-badge">Jaypee University • Odd Semester 2026-27</span>
+                  <span id="active-calendar-badge" class="ai-calendar-badge">No Schedule Uploaded</span>
                 </div>
                 <h2 id="calendar-view-heading">Academic Calendar & Course Timetable Hub</h2>
-                <p id="calendar-view-subheading">Upload your academic calendar (Excel, PDF, Image) or timetable circular to sort events by program, track exams, and sync to study schedules.</p>
+                <p id="calendar-view-subheading">Upload your university academic calendar (Excel, PDF, Image, CSV) or paste circular text to sort events by program, track exams, and sync schedules.</p>
               </div>
 
               <!-- Hub Action Buttons -->
@@ -359,9 +359,9 @@
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   <span>Upload Timetable / Calendar</span>
                 </button>
-                <button id="load-sample-calendar-btn" class="btn btn-subtle" title="Load Jaypee University 2026-27 Calendar Seed">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                  <span>Jaypee 2026-27 Seed</span>
+                <button id="clear-calendar-btn" class="btn btn-subtle text-danger" title="Clear or Replace Current Schedule" style="display:none;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  <span>Clear Schedule</span>
                 </button>
                 <button id="open-ai-key-modal-btn" class="btn btn-subtle btn-icon" title="Configure Gemini AI Vision Key" aria-label="AI Settings">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -374,35 +374,35 @@
               <div class="metric-mini-card">
                 <span class="metric-icon">📅</span>
                 <div>
-                  <span class="metric-val" id="metric-total-days">152</span>
+                  <span class="metric-val" id="metric-total-days">--</span>
                   <span class="metric-lbl">Total Semester Days</span>
                 </div>
               </div>
               <div class="metric-mini-card">
                 <span class="metric-icon">📚</span>
                 <div>
-                  <span class="metric-val" id="metric-teaching-days">94</span>
+                  <span class="metric-val" id="metric-teaching-days">--</span>
                   <span class="metric-lbl">Teaching Days</span>
                 </div>
               </div>
               <div class="metric-mini-card">
                 <span class="metric-icon">🎯</span>
                 <div>
-                  <span class="metric-val" id="metric-exam-days">18</span>
+                  <span class="metric-val" id="metric-exam-days">--</span>
                   <span class="metric-lbl">Days on Exams</span>
                 </div>
               </div>
               <div class="metric-mini-card">
                 <span class="metric-icon">🏖️</span>
                 <div>
-                  <span class="metric-val" id="metric-holiday-days">33</span>
+                  <span class="metric-val" id="metric-holiday-days">--</span>
                   <span class="metric-lbl">Holidays & Vacations</span>
                 </div>
               </div>
               <div class="metric-mini-card">
                 <span class="metric-icon">🏢</span>
                 <div>
-                  <span class="metric-val" id="metric-non-teaching">9</span>
+                  <span class="metric-val" id="metric-non-teaching">--</span>
                   <span class="metric-lbl">Non-Teaching Days</span>
                 </div>
               </div>
@@ -415,10 +415,6 @@
                 <div class="program-pills" id="program-filter-pills">
                   <!-- Generated dynamically from active calendar -->
                   <button class="filter-pill active" data-program="All Programs">🌟 All Programs</button>
-                  <button class="filter-pill" data-program="B-Tech (4 Years)">💻 B-Tech (4 Years)</button>
-                  <button class="filter-pill" data-program="BCA / MCA / MBA">🖥️ BCA / MCA / MBA</button>
-                  <button class="filter-pill" data-program="B.A / B.Com / B.Sc / BBA">📊 B.A / B.Com / B.Sc / BBA</button>
-                  <button class="filter-pill" data-program="1st Year (All)">🎓 1st Year (Freshers)</button>
                 </div>
               </div>
 
