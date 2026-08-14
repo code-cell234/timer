@@ -1,10 +1,13 @@
 /**
  * StudyPulse - Focus & Pomodoro Timer Module
  * Handles accurate interval countdowns, session transitions, audio cues, and zen mode.
+ * Native Android alarm is scheduled on start so the session-complete notification
+ * fires even when the phone is locked or another app is open.
  */
 
 import { storage } from './storage.js';
 import { audioService } from './audio.js';
+import { notificationService } from './notifications.js';
 
 export class TimerModule {
   constructor(appCoordinator) {
@@ -61,6 +64,39 @@ export class TimerModule {
     this.loadScratchpad();
     this.setMode('pomodoro');
     this.updateDailyGoalUI();
+    this._bindVisibilityChange();
+  }
+
+  /**
+   * When the user returns from lock screen or another app, check if the timer
+   * elapsed while we were invisible, and trigger completion if so.
+   */
+  _bindVisibilityChange() {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.isRunning && this.endTime) {
+        const now = Date.now();
+        if (now >= this.endTime) {
+          // Timer ended while app was hidden — complete the session now
+          this.remainingSeconds = 0;
+          this.updateDisplay();
+          this.completeSession();
+        }
+      }
+    });
+  }
+
+  /**
+   * Returns the current session duration in minutes (for notification body text).
+   */
+  _getTimerMinutes() {
+    return Math.round(this.totalSeconds / 60);
+  }
+
+  /**
+   * Returns the subject/tag selected for the current session.
+   */
+  _getTimerSubject() {
+    return this.subjectSelect?.value?.trim() || 'General';
   }
 
   bindEvents() {
@@ -209,6 +245,16 @@ export class TimerModule {
       }
     }, 500);
 
+    // Schedule a native Android alarm so the notification fires even when the
+    // phone is locked, in Doze mode, or another app is running in the foreground.
+    const isFocus = this.mode === 'pomodoro' || this.mode === 'deepwork' || this.mode === 'custom';
+    notificationService.scheduleTimerNotification(
+      this.endTime,
+      isFocus,
+      this._getTimerMinutes(),
+      this._getTimerSubject()
+    );
+
     this.updateDisplay();
   }
 
@@ -216,6 +262,9 @@ export class TimerModule {
     this.isRunning = false;
     clearInterval(this.timerInterval);
     this.timerInterval = null;
+
+    // Cancel the scheduled native alarm so it doesn't fire while paused
+    notificationService.cancelTimerNotification();
 
     this.toggleText.textContent = 'Resume Focus';
     this.playIcon.classList.remove('hidden');
@@ -258,7 +307,7 @@ export class TimerModule {
   }
 
   completeSession() {
-    this.pause();
+    this.pause(); // also calls cancelTimerNotification
     const isFocusInterval = this.mode === 'pomodoro' || this.mode === 'deepwork' || this.mode === 'custom';
 
     // Play chime sound if enabled

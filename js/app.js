@@ -36,6 +36,8 @@ class StudyPulseApp {
     this.initAmbientAudioControls();
     this.initSettings();
     this.checkNotificationPermission();
+    this.bindNotificationEventListeners();
+    this.initVisibilitySync();
   }
 
   initModules() {
@@ -360,6 +362,12 @@ class StudyPulseApp {
       });
     }
 
+    // Test lock-screen / background push notification
+    const testLockBtn = document.getElementById('test-lockscreen-notif-btn');
+    if (testLockBtn) {
+      testLockBtn.addEventListener('click', () => this.testLockScreenNotification());
+    }
+
     // Custom Durations
     const pomodoroDur = document.getElementById('setting-pomodoro-dur');
     const shortBreakDur = document.getElementById('setting-shortbreak-dur');
@@ -505,6 +513,70 @@ class StudyPulseApp {
         notificationService.syncAllReminders(state.reminders);
       }
     });
+  }
+
+  /**
+   * Route custom events fired by notification action tap handler.
+   * These events are dispatched from notifications.js when the user taps
+   * a notification on the lock screen / status bar.
+   */
+  bindNotificationEventListeners() {
+    // Navigate to a specific view (e.g. 'focus-view')
+    window.addEventListener('sp:navigate', (e) => {
+      const { view } = e.detail || {};
+      if (view) this.switchView(view);
+    });
+
+    // Open a specific reminder's edit modal
+    window.addEventListener('sp:openReminder', (e) => {
+      const { id } = e.detail || {};
+      if (id && this.remindersModule) {
+        this.switchView('reminders-view');
+        setTimeout(() => this.remindersModule.openEditModal(id), 300);
+      }
+    });
+  }
+
+  /**
+   * When the user returns to the app (from lock screen or background),
+   * re-sync all reminder alarms in case any were missed or rescheduled.
+   */
+  initVisibilitySync() {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        const state = storage.getState();
+        notificationService.syncAllReminders(state.reminders);
+      }
+    });
+  }
+
+  /**
+   * Schedule a 5-second test notification and prompt the user to lock the screen.
+   */
+  async testLockScreenNotification() {
+    const btn = document.getElementById('test-lockscreen-notif-btn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Locking in 5s…'; }
+
+    const ok = await notificationService.scheduleTestNotification(5);
+
+    if (ok) {
+      this.showToast(
+        '🔔 Test Scheduled!',
+        'Lock your phone now. A notification will pop up in 5 seconds.',
+        'success'
+      );
+    } else {
+      this.showToast(
+        '⚠️ Test Failed',
+        'Could not schedule the test. Please make sure notifications are enabled.',
+        'warning'
+      );
+    }
+
+    // Re-enable button after 8 seconds
+    setTimeout(() => {
+      if (btn) { btn.disabled = false; btn.textContent = '🔔 Test Lock Screen Alert (5s)'; }
+    }, 8000);
   }
 
   sendBrowserNotification(title, options = {}) {
